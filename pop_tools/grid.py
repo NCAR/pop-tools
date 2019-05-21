@@ -9,7 +9,23 @@ deg2rad = np.pi / 180.
 
 
 def get_grid(grid_name, scrip=False):
-    """Compute grid variables from input files."""
+    """Return a xarray.Dataset() with POP grid variables.
+
+    Parameters
+    ----------
+
+    grid_name : str
+      Name of grid (i.e., POP_gx3v7, POP_gx1v7, POP_tx0.1v3)
+
+    scrip : boolean, optional
+      Return grid in SCRIP format
+
+    Returns
+    -------
+
+    dso : `xarray.Dataset`
+      Dataset containing POP grid variables.
+    """
 
     if grid_name not in grid_defs:
         raise ValueError(f'Unknown grid: {grid_name}')
@@ -129,7 +145,8 @@ def get_grid(grid_name, scrip=False):
 
 @jit(nopython=True, parallel=True)
 def _compute_TLAT_TLONG(ULAT, ULONG, TLAT, TLONG, nlat, nlon):
-
+    """Compute TLAT and TLONG from ULAT, ULONG"""
+    
     for j in range(1, nlat):
         jm1 = j - 1
         for i in range(0, nlon):
