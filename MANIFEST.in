@@ -1,6 +1,6 @@
 recursive-include pop_tools *.py
-recursive-include pop_tools *.yaml
-recursive-include pop_tools/input_templates/*
+include pop_tools/*.yaml
+include pop_tools/input_templates/*
 include LICENSE
 include README.rst
 include requirements.txt
