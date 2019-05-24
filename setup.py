@@ -30,6 +30,7 @@ setup(
     packages=['pop_tools'],
     test_suite='tests',
     tests_require=test_requirements,
+    include_package_data=True,
     url='https://github.com/NCAR/pop-tools',
     zip_safe=False,
 )
