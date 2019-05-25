@@ -43,7 +43,8 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4):
     if len(non_lateral_dims) > 0:
         da_in_stack = da_in.stack(non_lateral_dims=non_lateral_dims)
         da_out_stack = xr.full_like(da_in_stack, fill_value=np.nan)
-        isvalid_mask_stack = isvalid_mask.stack(non_lateral_dims=non_lateral_dims)
+        isvalid_mask_stack = isvalid_mask.stack(
+            non_lateral_dims=non_lateral_dims)
         for i in range(da_in_stack.shape[-1]):
             arr = da_in_stack.data[:, :, i]
             da_out_stack[:, :, i] = lateral_fill_np_array(

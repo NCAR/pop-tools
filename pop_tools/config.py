@@ -47,7 +47,9 @@ def inputdata_relpath(file_fullpath):
 def svn_export(repo_path, local_path):
     """svn export"""
 
-    p = Popen(['svn', 'export', repo_path, local_path])
+    p = Popen(['svn', '--non-interactive',
+               '--trust-server-cert-failures=unknown-ca',
+               'export', repo_path, local_path])
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         print(stdout)
