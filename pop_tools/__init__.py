@@ -2,4 +2,4 @@
 
 from .config import grid_defs
 from .grid import get_grid
-from .fill import fill_POP_core
+from .fill import lateral_fill_np_array

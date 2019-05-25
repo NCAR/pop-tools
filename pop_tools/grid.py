@@ -1,5 +1,5 @@
 
-from numba import jit
+from numba import jit, prange
 import numpy as np
 import xarray as xr
 
@@ -146,10 +146,10 @@ def get_grid(grid_name, scrip=False):
 @jit(nopython=True, parallel=True)
 def _compute_TLAT_TLONG(ULAT, ULONG, TLAT, TLONG, nlat, nlon):
     """Compute TLAT and TLONG from ULAT, ULONG"""
-    
-    for j in range(1, nlat):
+
+    for j in prange(1, nlat):
         jm1 = j - 1
-        for i in range(0, nlon):
+        for i in prange(0, nlon):
             im1 = np.mod(i - 1 + nlon, nlon)
 
             tmp = np.cos(ULAT[jm1, im1])

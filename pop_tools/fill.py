@@ -2,7 +2,7 @@ import numpy as np
 from numba import jit
 
 
-def iterative_fill(var, isvalid_mask, ltripole=False, tol=1.0e-4):
+def lateral_fill_np_array(var, isvalid_mask, ltripole=False, tol=1.0e-4):
     """Fill missing values by interative smoothing operation."""
 
     fillmask = (np.isnan(var) & isvalid_mask)
