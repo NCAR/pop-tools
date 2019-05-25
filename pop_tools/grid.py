@@ -104,18 +104,22 @@ def get_grid(grid_name, scrip=False):
 
     dso['DXT'] = xr.DataArray(DXT, dims=('nlat', 'nlon'),
                               attrs={'units': 'cm',
-                                     'long_name': 'x-spacing centered at T points'})
+                                     'long_name': 'x-spacing centered at T points',
+                                     'coordinates': 'TLONG TLAT'})
 
     dso['DYT'] = xr.DataArray(DYT, dims=('nlat', 'nlon'),
                               attrs={'units': 'cm',
-                                     'long_name': 'y-spacing centered at T points'})
+                                     'long_name': 'y-spacing centered at T points',
+                                     'coordinates': 'TLONG TLAT'})
 
     dso['TAREA'] = xr.DataArray(TAREA / deg2rad, dims=('nlat', 'nlon'),
                                 attrs={'units': 'cm^2',
-                                       'long_name': 'area of T cells'})
+                                       'long_name': 'area of T cells',
+                                       'coordinates': 'TLONG TLAT'})
 
     dso['KMT'] = xr.DataArray(KMT, dims=('nlat', 'nlon'),
-                              attrs={'long_name': 'k Index of Deepest Grid Cell on T Grid'})
+                              attrs={'long_name': 'k Index of Deepest Grid Cell on T Grid',
+                                     'coordinates': 'TLONG TLAT'})
 
     dso['z_t'] = xr.DataArray(z_t, dims=('z_t'), name='z_t',
                               attrs={'units': 'cm',
