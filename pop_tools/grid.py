@@ -125,7 +125,7 @@ def get_grid(grid_name, scrip=False):
     )
 
     dso['TAREA'] = xr.DataArray(
-        TAREA / deg2rad,
+        TAREA,
         dims=('nlat', 'nlon'),
         attrs={'units': 'cm^2', 'long_name': 'area of T cells', 'coordinates': 'TLONG TLAT'},
     )
