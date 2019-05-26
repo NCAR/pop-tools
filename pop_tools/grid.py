@@ -1,11 +1,10 @@
-
-from numba import jit, prange
 import numpy as np
 import xarray as xr
+from numba import jit, prange
 
 from .config import grid_defs
 
-deg2rad = np.pi / 180.
+deg2rad = np.pi / 180.0
 
 
 def get_grid(grid_name, scrip=False):
@@ -34,13 +33,10 @@ def get_grid(grid_name, scrip=False):
 
     nlat = grid_attrs['lateral_dims'][0]
     nlon = grid_attrs['lateral_dims'][1]
-    dims_xy = (nlat, nlon)
+    # dims_xy = (nlat, nlon)
 
     # read horizontal grid
-    grid_file_data = np.fromfile(
-        grid_attrs['horiz_grid_fname'],
-        dtype='>f8',
-        count=-1)
+    grid_file_data = np.fromfile(grid_attrs['horiz_grid_fname'], dtype='>f8', count=-1)
     grid_file_data = grid_file_data.reshape((7, nlat, nlon))
 
     ULAT = grid_file_data[0, :, :].astype(np.float)
@@ -55,90 +51,128 @@ def get_grid(grid_name, scrip=False):
 
     # generate DXT, DYT, TAREA
     DXT = np.empty((nlat, nlon))
-    DXT[1:nlat, :] = 0.5 * (HTN[0:nlat - 1, :] + HTN[1:nlat, :])
+    DXT[1:nlat, :] = 0.5 * (HTN[0 : nlat - 1, :] + HTN[1:nlat, :])
     DXT[0, :] = 0.5 * (2 * HTN[0, :] - HTN[1, :] + HTN[0, :])
 
     DYT = np.empty((nlat, nlon))
-    DYT[:, 1:nlon] = 0.5 * (HTE[:, 0:nlon - 1] + HTE[:, 1:nlon])
+    DYT[:, 1:nlon] = 0.5 * (HTE[:, 0 : nlon - 1] + HTE[:, 1:nlon])
     DYT[:, 0] = 0.5 * (HTE[:, nlon - 1] + HTE[:, 0])
 
     TAREA = DXT * DYT
 
-    TLONG = np.where(TLONG < 0., TLONG + 2 * np.pi, TLONG)
+    TLONG = np.where(TLONG < 0.0, TLONG + 2 * np.pi, TLONG)
 
     # vertical grid
     tmp = np.loadtxt(grid_attrs['vert_grid_file'])
     dz = tmp[:, 0]
-    depth_edges = np.concatenate(([0.], np.cumsum(dz)))
+    depth_edges = np.concatenate(([0.0], np.cumsum(dz)))
     z_w = depth_edges[0:-1]
     z_w_bot = depth_edges[1:]
     z_t = depth_edges[0:-1] + 0.5 * dz
 
     # read KMT
-    kmt_flat = np.fromfile(
-        grid_attrs['topography_fname'],
-        dtype='>i4',
-        count=-1)
+    kmt_flat = np.fromfile(grid_attrs['topography_fname'], dtype='>i4', count=-1)
     assert kmt_flat.shape[0] == (
-        nlat * nlon), f'unexpected dims in topography file: {grid_attrs["topography_fname"]}'
+        nlat * nlon
+    ), f'unexpected dims in topography file: {grid_attrs["topography_fname"]}'
     assert kmt_flat.max() <= len(z_t), 'Max KMT > length z_t'
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # output dataset
     dso = xr.Dataset()
-    dso['TLAT'] = xr.DataArray(TLAT / deg2rad, dims=('nlat', 'nlon'),
-                               attrs={'units': 'degrees_north',
-                                      'long_name': 'T-grid latitude'})
+    dso['TLAT'] = xr.DataArray(
+        TLAT / deg2rad,
+        dims=('nlat', 'nlon'),
+        attrs={'units': 'degrees_north', 'long_name': 'T-grid latitude'},
+    )
 
-    dso['TLONG'] = xr.DataArray(TLONG / deg2rad, dims=('nlat', 'nlon'),
-                                attrs={'units': 'degrees_east',
-                                       'long_name': 'T-grid longitude'})
+    dso['TLONG'] = xr.DataArray(
+        TLONG / deg2rad,
+        dims=('nlat', 'nlon'),
+        attrs={'units': 'degrees_east', 'long_name': 'T-grid longitude'},
+    )
 
-    dso['ULAT'] = xr.DataArray(ULAT / deg2rad, dims=('nlat', 'nlon'),
-                               attrs={'units': 'degrees_north',
-                                      'long_name': 'U-grid latitude'})
+    dso['ULAT'] = xr.DataArray(
+        ULAT / deg2rad,
+        dims=('nlat', 'nlon'),
+        attrs={'units': 'degrees_north', 'long_name': 'U-grid latitude'},
+    )
 
-    dso['ULONG'] = xr.DataArray(ULONG / deg2rad, dims=('nlat', 'nlon'),
-                                attrs={'units': 'degrees_east',
-                                       'long_name': 'U-grid longitude'})
+    dso['ULONG'] = xr.DataArray(
+        ULONG / deg2rad,
+        dims=('nlat', 'nlon'),
+        attrs={'units': 'degrees_east', 'long_name': 'U-grid longitude'},
+    )
 
-    dso['DXT'] = xr.DataArray(DXT, dims=('nlat', 'nlon'),
-                              attrs={'units': 'cm',
-                                     'long_name': 'x-spacing centered at T points',
-                                     'coordinates': 'TLONG TLAT'})
+    dso['DXT'] = xr.DataArray(
+        DXT,
+        dims=('nlat', 'nlon'),
+        attrs={
+            'units': 'cm',
+            'long_name': 'x-spacing centered at T points',
+            'coordinates': 'TLONG TLAT',
+        },
+    )
 
-    dso['DYT'] = xr.DataArray(DYT, dims=('nlat', 'nlon'),
-                              attrs={'units': 'cm',
-                                     'long_name': 'y-spacing centered at T points',
-                                     'coordinates': 'TLONG TLAT'})
+    dso['DYT'] = xr.DataArray(
+        DYT,
+        dims=('nlat', 'nlon'),
+        attrs={
+            'units': 'cm',
+            'long_name': 'y-spacing centered at T points',
+            'coordinates': 'TLONG TLAT',
+        },
+    )
 
-    dso['TAREA'] = xr.DataArray(TAREA / deg2rad, dims=('nlat', 'nlon'),
-                                attrs={'units': 'cm^2',
-                                       'long_name': 'area of T cells',
-                                       'coordinates': 'TLONG TLAT'})
+    dso['TAREA'] = xr.DataArray(
+        TAREA / deg2rad,
+        dims=('nlat', 'nlon'),
+        attrs={'units': 'cm^2', 'long_name': 'area of T cells', 'coordinates': 'TLONG TLAT'},
+    )
 
-    dso['KMT'] = xr.DataArray(KMT, dims=('nlat', 'nlon'),
-                              attrs={'long_name': 'k Index of Deepest Grid Cell on T Grid',
-                                     'coordinates': 'TLONG TLAT'})
+    dso['KMT'] = xr.DataArray(
+        KMT,
+        dims=('nlat', 'nlon'),
+        attrs={'long_name': 'k Index of Deepest Grid Cell on T Grid', 'coordinates': 'TLONG TLAT'},
+    )
 
-    dso['z_t'] = xr.DataArray(z_t, dims=('z_t'), name='z_t',
-                              attrs={'units': 'cm',
-                                     'long_name': 'depth from surface to midpoint of layer',
-                                     'positive': 'down'})
+    dso['z_t'] = xr.DataArray(
+        z_t,
+        dims=('z_t'),
+        name='z_t',
+        attrs={
+            'units': 'cm',
+            'long_name': 'depth from surface to midpoint of layer',
+            'positive': 'down',
+        },
+    )
 
-    dso['dz'] = xr.DataArray(dz, dims=('z_t'), coords={'z_t': dso.z_t},
-                             attrs={'units': 'cm',
-                                    'long_name': 'thickness of layer k'})
+    dso['dz'] = xr.DataArray(
+        dz,
+        dims=('z_t'),
+        coords={'z_t': dso.z_t},
+        attrs={'units': 'cm', 'long_name': 'thickness of layer k'},
+    )
 
-    dso['z_w'] = xr.DataArray(z_w, dims=('z_w'),
-                              attrs={'units': 'cm',
-                                     'positive': 'down',
-                                     'long_name': 'depth from surface to top of layer'})
+    dso['z_w'] = xr.DataArray(
+        z_w,
+        dims=('z_w'),
+        attrs={
+            'units': 'cm',
+            'positive': 'down',
+            'long_name': 'depth from surface to top of layer',
+        },
+    )
 
-    dso['z_w_bot'] = xr.DataArray(z_w_bot, dims=('z_w_bot'),
-                                  attrs={'units': 'cm',
-                                         'positive': 'down',
-                                         'long_name': 'depth from surface to bottom of layer'})
+    dso['z_w_bot'] = xr.DataArray(
+        z_w_bot,
+        dims=('z_w_bot'),
+        attrs={
+            'units': 'cm',
+            'positive': 'down',
+            'long_name': 'depth from surface to bottom of layer',
+        },
+    )
 
     dso.attrs = grid_attrs
     if scrip:
