@@ -43,12 +43,10 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4):
     if len(non_lateral_dims) > 0:
         da_in_stack = da_in.stack(non_lateral_dims=non_lateral_dims)
         da_out_stack = xr.full_like(da_in_stack, fill_value=np.nan)
-        isvalid_mask_stack = isvalid_mask.stack(
-            non_lateral_dims=non_lateral_dims)
+        isvalid_mask_stack = isvalid_mask.stack(non_lateral_dims=non_lateral_dims)
         for i in range(da_in_stack.shape[-1]):
             arr = da_in_stack.data[:, :, i]
-            da_out_stack[:, :, i] = lateral_fill_np_array(
-                arr, isvalid_mask_stack.data[:, :, i])
+            da_out_stack[:, :, i] = lateral_fill_np_array(arr, isvalid_mask_stack.data[:, :, i])
 
         da_out = da_out_stack.unstack('non_lateral_dims').transpose(*dims_in)
 
@@ -92,28 +90,20 @@ def lateral_fill_np_array(var, isvalid_mask, ltripole=False, tol=1.0e-4):
       DataArray with NaNs filled by iterative smoothing.
 
     """
-    fillmask = (np.isnan(var) & isvalid_mask)
+    fillmask = np.isnan(var) & isvalid_mask
     nlat, nlon = var.shape[-2:]
     missing_value = 1e36
 
     var = var.copy()
     var[np.isnan(var)] = missing_value
-    _iterative_fill_POP_core(
-        nlat,
-        nlon,
-        var,
-        fillmask,
-        missing_value,
-        tol,
-        ltripole)
+    _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole)
     var[var == missing_value] = np.nan
 
     return var
 
 
 @jit(nopython=True)
-def _iterative_fill_POP_core(
-        nlat, nlon, var, fillmask, missing_value, tol, ltripole):
+def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole):
     """Iterative smoothing algorithm."""
 
     done = False
@@ -178,7 +168,7 @@ def _iterative_fill_POP_core(
                 # self
                 if var[j, i] != missing_value:
                     numer += denom * var[j, i]
-                    denom *= 2.
+                    denom *= 2.0
 
                 if denom > 0.0:
                     work[j, i] = numer / denom

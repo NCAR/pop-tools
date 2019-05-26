@@ -1,0 +1,23 @@
+name: pop-tools-dev
+channels:
+  - conda-forge
+dependencies:
+  - bottleneck
+  - codecov
+  - dask
+  - distributed
+  - jupyterlab
+  - matplotlib
+  - netcdf4
+  - numba
+  - numpy
+  - pip
+  - pytest
+  - pytest-cov
+  - python=3.6
+  - scipy
+  - xarray>=0.12
+  - pip:
+    - docrep
+    - pytest-lazy-fixture
+    - pytest-xdist

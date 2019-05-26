@@ -1,0 +1,34 @@
+name: pop-tools-dev
+channels:
+  - conda-forge
+dependencies:
+  - autopep8
+  - black
+  - bottleneck
+  - codecov
+  - dask
+  - distributed
+  - flake8
+  - isort
+  - jupyterlab
+  - make
+  - matplotlib
+  - nbsphinx
+  - netcdf4
+  - numba
+  - numpy
+  - numpydoc
+  - pip
+  - pytest
+  - pytest-cov
+  - python=3.7
+  - recommonmark
+  - scipy
+  - sphinx_rtd_theme
+  - sphinx>=1.6
+  - xarray>=0.12
+  - pip:
+    - docrep
+    - pytest-lazy-fixture
+    - pytest-xdist
+    - sphinx_copybutton
