@@ -1,13 +1,11 @@
 name: pop-tools-dev
 channels:
   - conda-forge
-  - conda_build_test
 dependencies:
   - bottleneck
   - codecov
   - dask
   - distributed
-  - git
   - jupyterlab
   - matplotlib
   - netcdf4
@@ -19,7 +17,6 @@ dependencies:
   - python=3.6
   - scipy
   - xarray>=0.12
-  - svn
   - pip:
     - docrep
     - pytest-lazy-fixture
