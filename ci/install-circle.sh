@@ -3,7 +3,7 @@
 set -e
 set -eo pipefail
 
-apt update && apt install subversion git
+apt-get update && apt-get install subversion git -y
 
 conda config --set always_yes true --set changeps1 false --set quiet true
 conda config --add channels conda-forge
