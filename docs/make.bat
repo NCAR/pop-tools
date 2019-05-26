@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=source
 set BUILDDIR=_build
-set SPHINXPROJ=esmlab
+set SPHINXPROJ=pop-tools
 
 if "%1" == "" goto help
 
