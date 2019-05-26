@@ -1,6 +1,7 @@
 name: pop-tools-dev
 channels:
   - conda-forge
+  - conda_build_test
 dependencies:
   - autopep8
   - black
@@ -28,6 +29,7 @@ dependencies:
   - sphinx_rtd_theme
   - sphinx>=1.6
   - xarray>=0.12
+  - svn
   - pip:
     - docrep
     - pytest-lazy-fixture
