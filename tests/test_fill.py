@@ -42,12 +42,13 @@ def test_lateral_fill_np_array():
         equal_nan=True,
         verbose=True)
 
+
 def test_lateral_fill_np_array_ltripole():
 
     # generate psuedo-data
     dx, dy = 0.05, 0.05
-    y, x = np.mgrid[slice(1-dy, 3 + dy, dy),
-                    slice(1-dx, 5 + dx, dx)]
+    y, x = np.mgrid[slice(1 - dy, 3 + dy, dy),
+                    slice(1 - dx, 5 + dx, dx)]
     z_orig = np.sin(x)**10 + np.cos(10 + y * x) * np.cos(x)
 
     # construct mask and apply mask
@@ -77,6 +78,7 @@ def test_lateral_fill_np_array_ltripole():
         atol=1e-14,
         equal_nan=True,
         verbose=True)
+
 
 def test_lateral_fill_2D():
     ds = pop_tools.get_grid('POP_gx3v7')
