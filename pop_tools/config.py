@@ -1,7 +1,7 @@
 """Configuration for pop-tools"""
 
 import os
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
 import jinja2
 import yaml
@@ -32,8 +32,7 @@ def gen_grid_defs(grid_def_file):
             if not isinstance(v, str):
                 continue
             template = jinja2.Template(v)
-            grid_attrs[k] = template.render(INPUTDATA=INPUTDATA,
-                                            INPUT_TEMPLATES=INPUT_TEMPLATES)
+            grid_attrs[k] = template.render(INPUTDATA=INPUTDATA, INPUT_TEMPLATES=INPUT_TEMPLATES)
     return grid_defs
 
 
@@ -41,15 +40,22 @@ def inputdata_relpath(file_fullpath):
     """Return part of path following /path/to/inputdata/"""
     fullpath_list = file_fullpath.split('/')
     ndx = fullpath_list.index('inputdata')
-    return '/'.join(fullpath_list[ndx + 1:])
+    return '/'.join(fullpath_list[ndx + 1 :])
 
 
 def svn_export(repo_path, local_path):
     """svn export"""
 
-    p = Popen(['svn', '--non-interactive',
-               '--trust-server-cert-failures=unknown-ca',
-               'export', repo_path, local_path])
+    p = Popen(
+        [
+            'svn',
+            '--non-interactive',
+            '--trust-server-cert-failures=unknown-ca',
+            'export',
+            repo_path,
+            local_path,
+        ]
+    )
     stdout, stderr = p.communicate()
     if p.returncode != 0:
         print(stdout)
@@ -64,8 +70,7 @@ def ensure_inputdata():
         if not os.path.isdir(INPUTDATA):
             os.makedirs(INPUTDATA)
 
-    indat_grid_file_keys = ['horiz_grid_fname', 'topography_fname',
-                            'region_mask_fname']
+    indat_grid_file_keys = ['horiz_grid_fname', 'topography_fname', 'region_mask_fname']
 
     for grid, grid_attrs in grid_defs.items():
 
