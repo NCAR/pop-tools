@@ -16,5 +16,6 @@ dependencies:
   - numba
   - scipy
   - jinja2
+  - dask
   - pip:
     - sphinx_copybutton
