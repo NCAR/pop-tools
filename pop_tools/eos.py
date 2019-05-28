@@ -1,7 +1,6 @@
-import xarray as xr
-import numpy as np
-
 import dask
+import numpy as np
+import xarray as xr
 from numba import jit
 
 
@@ -19,8 +18,9 @@ def compute_pressure(depth):
     pressure : float
       Pressure in dbar
     """
-    return 0.059808 * (np.exp(-0.025 * depth) - 1.0) + 0.100766 * \
-        depth + 2.28405e-7 * (depth ** 2.0)
+    return (
+        0.059808 * (np.exp(-0.025 * depth) - 1.0) + 0.100766 * depth + 2.28405e-7 * (depth ** 2.0)
+    )
 
 
 def eos(salt, temp, return_coefs=False, **kwargs):
@@ -105,10 +105,12 @@ def eos(salt, temp, return_coefs=False, **kwargs):
                 raise NotImplementedError('cannot return coefficient with dask')
 
             else:
+                RHO = xr.full_like(salt, fill_value=np.nan)
                 dRHOdS = xr.full_like(salt, fill_value=np.nan)
                 dRHOdT = xr.full_like(salt, fill_value=np.nan)
                 RHO[:], dRHOdS[:], dRHOdT[:] = _compute_eos_coeffs(
-                    salt.data, temp.data, pressure.data)
+                    salt.data, temp.data, pressure.data
+                )
 
             dRHOdS.name = 'dRHOdS'
             dRHOdS.attrs['units'] = 'kg/m^3/degC'
@@ -120,9 +122,14 @@ def eos(salt, temp, return_coefs=False, **kwargs):
 
         else:
             if isinstance(salt.data, dask.array.Array):
-                RHO = xr.apply_ufunc(_compute_eos, salt, temp, pressure,
-                                     dask='parallelized',
-                                     output_dtypes=[salt.dtype])
+                RHO = xr.apply_ufunc(
+                    _compute_eos,
+                    salt,
+                    temp,
+                    pressure,
+                    dask='parallelized',
+                    output_dtypes=[salt.dtype],
+                )
             else:
                 RHO = xr.full_like(salt, fill_value=np.nan)
                 RHO[:] = _compute_eos(salt.data, temp.data, pressure.data)
@@ -152,7 +159,7 @@ def eos(salt, temp, return_coefs=False, **kwargs):
 def _compute_eos(salt, temp, pressure):
     # MWJF EOS coefficients
     # *** these constants will be used to construct the numerator
-    mwjfnp0s0t0 = 9.99843699e+2
+    mwjfnp0s0t0 = 9.99843699e2
     mwjfnp0s0t1 = 7.35212840
     mwjfnp0s0t2 = -5.45928211e-2
     mwjfnp0s0t3 = 3.98476704e-4
@@ -180,7 +187,7 @@ def _compute_eos(salt, temp, pressure):
     mwjfdp2s0t3 = -3.03175128e-16
     mwjfdp3s0t1 = -1.27934137e-17
 
-    salt2 = salt**0.5
+    salt2 = salt ** 0.5
 
     # compute density
     # *** first calculate numerator of MWJF density [P_1(S,T,p)]
@@ -192,9 +199,11 @@ def _compute_eos(salt, temp, pressure):
     mwjfnums1t1 = mwjfnp0s1t1
     mwjfnums2t0 = mwjfnp0s2t0
 
-    WORK1 = (mwjfnums0t0 + temp * (mwjfnums0t1 + temp
-                                   * (mwjfnums0t2 + mwjfnums0t3 *  temp)) + salt *
-             (mwjfnums1t0 + mwjfnums1t1 * temp + mwjfnums2t0 * salt))
+    WORK1 = (
+        mwjfnums0t0
+        + temp * (mwjfnums0t1 + temp * (mwjfnums0t2 + mwjfnums0t3 * temp))
+        + salt * (mwjfnums1t0 + mwjfnums1t1 * temp + mwjfnums2t0 * salt)
+    )
 
     # *** now calculate denominator of MWJF density [P_2(S,T,p)]
     mwjfdens0t0 = mwjfdp0s0t0 + pressure * mwjfdp1s0t0
@@ -208,10 +217,16 @@ def _compute_eos(salt, temp, pressure):
     mwjfdensqt0 = mwjfdp0sqt0
     mwjfdensqt2 = mwjfdp0sqt2
 
-    WORK2 = mwjfdens0t0 + temp * (mwjfdens0t1 + temp * (mwjfdens0t2 +
-                                                        temp *  (mwjfdens0t3 + mwjfdens0t4 *  temp))) +                   \
-        salt * (mwjfdens1t0 + temp * (mwjfdens1t1 + temp * temp * mwjfdens1t3) +
-                salt2 *  (mwjfdensqt0 + temp * temp * mwjfdensqt2))
+    WORK2 = (
+        mwjfdens0t0
+        + temp * (mwjfdens0t1 + temp * (mwjfdens0t2 + temp * (mwjfdens0t3 + mwjfdens0t4 * temp)))
+        + salt
+        * (
+            mwjfdens1t0
+            + temp * (mwjfdens1t1 + temp * temp * mwjfdens1t3)
+            + salt2 * (mwjfdensqt0 + temp * temp * mwjfdensqt2)
+        )
+    )
 
     DENOMK = 1.0 / WORK2
 
@@ -222,7 +237,7 @@ def _compute_eos(salt, temp, pressure):
 def _compute_eos_coeffs(salt, temp, pressure):
     # MWJF EOS coefficients
     # *** these constants will be used to construct the numerator
-    mwjfnp0s0t0 = 9.99843699e+2
+    mwjfnp0s0t0 = 9.99843699e2
     mwjfnp0s0t1 = 7.35212840
     mwjfnp0s0t2 = -5.45928211e-2
     mwjfnp0s0t3 = 3.98476704e-4
@@ -250,7 +265,7 @@ def _compute_eos_coeffs(salt, temp, pressure):
     mwjfdp2s0t3 = -3.03175128e-16
     mwjfdp3s0t1 = -1.27934137e-17
 
-    salt2 = salt**0.5
+    salt2 = salt ** 0.5
 
     # compute density
     # *** first calculate numerator of MWJF density [P_1(S,T,p)]
@@ -262,9 +277,11 @@ def _compute_eos_coeffs(salt, temp, pressure):
     mwjfnums1t1 = mwjfnp0s1t1
     mwjfnums2t0 = mwjfnp0s2t0
 
-    WORK1 = (mwjfnums0t0 + temp * (mwjfnums0t1 + temp
-                                   * (mwjfnums0t2 + mwjfnums0t3 *  temp)) + salt *
-             (mwjfnums1t0 + mwjfnums1t1 * temp + mwjfnums2t0 * salt))
+    WORK1 = (
+        mwjfnums0t0
+        + temp * (mwjfnums0t1 + temp * (mwjfnums0t2 + mwjfnums0t3 * temp))
+        + salt * (mwjfnums1t0 + mwjfnums1t1 * temp + mwjfnums2t0 * salt)
+    )
 
     # *** now calculate denominator of MWJF density [P_2(S,T,p)]
     mwjfdens0t0 = mwjfdp0s0t0 + pressure * mwjfdp1s0t0
@@ -278,32 +295,44 @@ def _compute_eos_coeffs(salt, temp, pressure):
     mwjfdensqt0 = mwjfdp0sqt0
     mwjfdensqt2 = mwjfdp0sqt2
 
-    WORK2 = mwjfdens0t0 + temp * (mwjfdens0t1 + temp * (mwjfdens0t2 +
-                                                        temp *  (mwjfdens0t3 + mwjfdens0t4 *  temp))) +                   \
-        salt * (mwjfdens1t0 + temp * (mwjfdens1t1 + temp * temp * mwjfdens1t3) +
-                salt2 *  (mwjfdensqt0 + temp * temp * mwjfdensqt2))
+    WORK2 = (
+        mwjfdens0t0
+        + temp * (mwjfdens0t1 + temp * (mwjfdens0t2 + temp * (mwjfdens0t3 + mwjfdens0t4 * temp)))
+        + salt
+        * (
+            mwjfdens1t0
+            + temp * (mwjfdens1t1 + temp * temp * mwjfdens1t3)
+            + salt2 * (mwjfdensqt0 + temp * temp * mwjfdensqt2)
+        )
+    )
 
     DENOMK = 1.0 / WORK2
 
     RHOFULL = WORK1 * DENOMK
 
     # dRHOdT
-    WORK3 = mwjfnums0t1 + temp * (2.0 * mwjfnums0t2 +
-                                  3.0 * mwjfnums0t3 *  temp) + mwjfnums1t1 *  salt
+    WORK3 = mwjfnums0t1 + temp * (2.0 * mwjfnums0t2 + 3.0 * mwjfnums0t3 * temp) + mwjfnums1t1 * salt
 
-    WORK4 = mwjfdens0t1 + salt * mwjfdens1t1 +                     \
-        temp * (2.0 * (mwjfdens0t2 + salt * salt2 * mwjfdensqt2)
-                + temp *  (3.0 * (mwjfdens0t3 + salt *  mwjfdens1t3) +
-                         temp *   4.0 * mwjfdens0t4))
+    WORK4 = (
+        mwjfdens0t1
+        + salt * mwjfdens1t1
+        + temp
+        * (
+            2.0 * (mwjfdens0t2 + salt * salt2 * mwjfdensqt2)
+            + temp * (3.0 * (mwjfdens0t3 + salt * mwjfdens1t3) + temp * 4.0 * mwjfdens0t4)
+        )
+    )
 
     DRHODT = (WORK3 - WORK1 * DENOMK * WORK4) * DENOMK
 
     # dRHOdS
     WORK3 = mwjfnums1t0 + mwjfnums1t1 * temp + 2.0 * mwjfnums2t0 * salt
 
-    WORK4 = mwjfdens1t0 +                                   \
-        temp * (mwjfdens1t1 + temp * temp * mwjfdens1t3) +          \
-        1.5 * salt2 * (mwjfdensqt0 + temp * temp * mwjfdensqt2)
+    WORK4 = (
+        mwjfdens1t0
+        + temp * (mwjfdens1t1 + temp * temp * mwjfdens1t3)
+        + 1.5 * salt2 * (mwjfdensqt0 + temp * temp * mwjfdensqt2)
+    )
 
     DRHODS = (WORK3 - WORK1 * DENOMK * WORK4) * DENOMK * 1000.0
 
