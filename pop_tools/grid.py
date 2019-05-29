@@ -4,8 +4,6 @@ from numba import jit, prange
 
 from .config import grid_defs
 
-deg2rad = np.pi / 180.0
-
 
 def get_grid(grid_name, scrip=False):
     """Return a xarray.Dataset() with POP grid variables.
@@ -84,24 +82,24 @@ def get_grid(grid_name, scrip=False):
         dso.grid_dims.encoding = {'dtype': np.int32, '_FillValue': None}
 
         dso['grid_center_lat'] = xr.DataArray(
-            TLAT.reshape((-1,)) / deg2rad, dims=('grid_size'), attrs={'units': 'degrees'}
+            np.rad2deg(TLAT.reshape((-1,))), dims=('grid_size'), attrs={'units': 'degrees'}
         )
         dso.grid_center_lat.encoding = {'dtype': np.float64, '_FillValue': None}
 
         dso['grid_center_lon'] = xr.DataArray(
-            TLONG.reshape((-1,)) / deg2rad, dims=('grid_size'), attrs={'units': 'degrees'}
+            np.rad2deg(TLONG.reshape((-1,))), dims=('grid_size'), attrs={'units': 'degrees'}
         )
         dso.grid_center_lon.encoding = {'dtype': np.float64, '_FillValue': None}
 
         dso['grid_corner_lat'] = xr.DataArray(
-            corner_lat.reshape((-1, 4)) / deg2rad,
+            np.rad2deg(corner_lat.reshape((-1, 4))),
             dims=('grid_size', 'grid_corners'),
             attrs={'units': 'degrees'},
         )
         dso.grid_corner_lat.encoding = {'dtype': np.float64, '_FillValue': None}
 
         dso['grid_corner_lon'] = xr.DataArray(
-            corner_lon.reshape((-1, 4)) / deg2rad,
+            np.rad2deg(corner_lon.reshape((-1, 4))),
             dims=('grid_size', 'grid_corners'),
             attrs={'units': 'degrees'},
         )
@@ -118,25 +116,25 @@ def get_grid(grid_name, scrip=False):
         TLONG = np.where(TLONG < 0.0, TLONG + 2 * np.pi, TLONG)
 
         dso['TLAT'] = xr.DataArray(
-            TLAT / deg2rad,
+            np.rad2deg(TLAT),
             dims=('nlat', 'nlon'),
             attrs={'units': 'degrees_north', 'long_name': 'T-grid latitude'},
         )
 
         dso['TLONG'] = xr.DataArray(
-            TLONG / deg2rad,
+            np.rad2deg(TLONG),
             dims=('nlat', 'nlon'),
             attrs={'units': 'degrees_east', 'long_name': 'T-grid longitude'},
         )
 
         dso['ULAT'] = xr.DataArray(
-            ULAT / deg2rad,
+            np.rad2deg(ULAT),
             dims=('nlat', 'nlon'),
             attrs={'units': 'degrees_north', 'long_name': 'U-grid latitude'},
         )
 
         dso['ULONG'] = xr.DataArray(
-            ULONG / deg2rad,
+            np.rad2deg(ULONG),
             dims=('nlat', 'nlon'),
             attrs={'units': 'degrees_east', 'long_name': 'U-grid longitude'},
         )
