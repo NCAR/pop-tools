@@ -27,6 +27,7 @@ dependencies:
   - sphinx_rtd_theme
   - sphinx>=1.6
   - xarray>=0.12
+  - zarr
   - pip:
     - docrep
     - pytest-lazy-fixture
