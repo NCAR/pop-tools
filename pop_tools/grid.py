@@ -73,6 +73,13 @@ def get_grid(grid_name, scrip=False):
     assert kmt_flat.max() <= len(z_t), 'Max KMT > length z_t'
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
+    # read REGION_MASK
+    region_mask_flat = np.fromfile(grid_attrs['region_mask_fname'], dtype='>i4', count=-1)
+    assert region_mask_flat.shape[0] == (
+        nlat * nlon
+    ), f'unexpected dims in region_mask file: {grid_attrs["region_mask_fname"]}'
+    REGION_MASK = region_mask_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
+
     # output dataset
     dso = xr.Dataset()
     if scrip:
@@ -170,6 +177,15 @@ def get_grid(grid_name, scrip=False):
             dims=('nlat', 'nlon'),
             attrs={
                 'long_name': 'k Index of Deepest Grid Cell on T Grid',
+                'coordinates': 'TLONG TLAT',
+            },
+        )
+
+        dso['REGION_MASK'] = xr.DataArray(
+            REGION_MASK,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'long_name': 'basin index number (signed integers)',
                 'coordinates': 'TLONG TLAT',
             },
         )
