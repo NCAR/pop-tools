@@ -37,6 +37,7 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4):
 
     attrs = da_in.attrs
     encoding = da_in.encoding
+    coords = da_in.coords
 
     da_in, isvalid_mask = xr.broadcast(da_in, isvalid_mask)
 
@@ -56,6 +57,8 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4):
 
     da_out.attrs = attrs
     da_out.encoding = encoding
+    for k, da in coords.items():
+        da_out[k].attrs = da.attrs
 
     return da_out
 
