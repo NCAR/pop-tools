@@ -1,0 +1,7 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "grid_size"
+    ],
+    "long_name": "area weights",
+    "units": "radians^2"
+}

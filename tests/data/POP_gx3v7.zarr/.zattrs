@@ -1,0 +1,14 @@
+{
+    "conventions": "SCRIP",
+    "horiz_grid_fname": "/Users/mclong/scratch/inputdata/ocn/pop/gx3v7/grid/horiz_grid_20030806.ieeer8",
+    "lateral_dims": [
+        116,
+        100
+    ],
+    "region_mask_fname": "/Users/mclong/scratch/inputdata/ocn/pop/gx3v7/grid/region_mask_20090831.ieeei4",
+    "title": "POP_gx3v7 grid",
+    "topography_fname": "/Users/mclong/scratch/inputdata/ocn/pop/gx3v7/grid/topography_20100105.ieeei4",
+    "type": "dipole",
+    "vert_grid_file": "/Users/mclong/codes/pop-tools/pop_tools/input_templates/gx3v7_vert_grid",
+    "vertical_dims": 60
+}
