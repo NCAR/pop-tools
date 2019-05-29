@@ -33,7 +33,6 @@ def get_grid(grid_name, scrip=False):
 
     nlat = grid_attrs['lateral_dims'][0]
     nlon = grid_attrs['lateral_dims'][1]
-    # dims_xy = (nlat, nlon)
 
     # read horizontal grid
     grid_file_data = np.fromfile(grid_attrs['horiz_grid_fname'], dtype='>f8', count=-1)
@@ -60,8 +59,6 @@ def get_grid(grid_name, scrip=False):
 
     TAREA = DXT * DYT
 
-    TLONG = np.where(TLONG < 0.0, TLONG + 2 * np.pi, TLONG)
-
     # vertical grid
     tmp = np.loadtxt(grid_attrs['vert_grid_file'])
     dz = tmp[:, 0]
@@ -80,103 +77,145 @@ def get_grid(grid_name, scrip=False):
 
     # output dataset
     dso = xr.Dataset()
-    dso['TLAT'] = xr.DataArray(
-        TLAT / deg2rad,
-        dims=('nlat', 'nlon'),
-        attrs={'units': 'degrees_north', 'long_name': 'T-grid latitude'},
-    )
-
-    dso['TLONG'] = xr.DataArray(
-        TLONG / deg2rad,
-        dims=('nlat', 'nlon'),
-        attrs={'units': 'degrees_east', 'long_name': 'T-grid longitude'},
-    )
-
-    dso['ULAT'] = xr.DataArray(
-        ULAT / deg2rad,
-        dims=('nlat', 'nlon'),
-        attrs={'units': 'degrees_north', 'long_name': 'U-grid latitude'},
-    )
-
-    dso['ULONG'] = xr.DataArray(
-        ULONG / deg2rad,
-        dims=('nlat', 'nlon'),
-        attrs={'units': 'degrees_east', 'long_name': 'U-grid longitude'},
-    )
-
-    dso['DXT'] = xr.DataArray(
-        DXT,
-        dims=('nlat', 'nlon'),
-        attrs={
-            'units': 'cm',
-            'long_name': 'x-spacing centered at T points',
-            'coordinates': 'TLONG TLAT',
-        },
-    )
-
-    dso['DYT'] = xr.DataArray(
-        DYT,
-        dims=('nlat', 'nlon'),
-        attrs={
-            'units': 'cm',
-            'long_name': 'y-spacing centered at T points',
-            'coordinates': 'TLONG TLAT',
-        },
-    )
-
-    dso['TAREA'] = xr.DataArray(
-        TAREA,
-        dims=('nlat', 'nlon'),
-        attrs={'units': 'cm^2', 'long_name': 'area of T cells', 'coordinates': 'TLONG TLAT'},
-    )
-
-    dso['KMT'] = xr.DataArray(
-        KMT,
-        dims=('nlat', 'nlon'),
-        attrs={'long_name': 'k Index of Deepest Grid Cell on T Grid', 'coordinates': 'TLONG TLAT'},
-    )
-
-    dso['z_t'] = xr.DataArray(
-        z_t,
-        dims=('z_t'),
-        name='z_t',
-        attrs={
-            'units': 'cm',
-            'long_name': 'depth from surface to midpoint of layer',
-            'positive': 'down',
-        },
-    )
-
-    dso['dz'] = xr.DataArray(
-        dz,
-        dims=('z_t'),
-        coords={'z_t': dso.z_t},
-        attrs={'units': 'cm', 'long_name': 'thickness of layer k'},
-    )
-
-    dso['z_w'] = xr.DataArray(
-        z_w,
-        dims=('z_w'),
-        attrs={
-            'units': 'cm',
-            'positive': 'down',
-            'long_name': 'depth from surface to top of layer',
-        },
-    )
-
-    dso['z_w_bot'] = xr.DataArray(
-        z_w_bot,
-        dims=('z_w_bot'),
-        attrs={
-            'units': 'cm',
-            'positive': 'down',
-            'long_name': 'depth from surface to bottom of layer',
-        },
-    )
-
-    dso.attrs = grid_attrs
     if scrip:
-        raise NotImplementedError('SCRIP format not implemented')
+        corner_lat, corner_lon = _compute_corners(ULAT, ULONG)
+
+        dso['grid_dims'] = xr.DataArray(np.array([nlon, nlat], dtype=np.int32), dims=('grid_rank',))
+        dso.grid_dims.encoding = {'dtype': np.int32, '_FillValue': None}
+
+        dso['grid_center_lat'] = xr.DataArray(
+            TLAT.reshape((-1,)) / deg2rad, dims=('grid_size'), attrs={'units': 'degrees'}
+        )
+        dso.grid_center_lat.encoding = {'dtype': np.float64, '_FillValue': None}
+
+        dso['grid_center_lon'] = xr.DataArray(
+            TLONG.reshape((-1,)) / deg2rad, dims=('grid_size'), attrs={'units': 'degrees'}
+        )
+        dso.grid_center_lon.encoding = {'dtype': np.float64, '_FillValue': None}
+
+        dso['grid_corner_lat'] = xr.DataArray(
+            corner_lat.reshape((-1, 4)) / deg2rad,
+            dims=('grid_size', 'grid_corners'),
+            attrs={'units': 'degrees'},
+        )
+        dso.grid_corner_lat.encoding = {'dtype': np.float64, '_FillValue': None}
+
+        dso['grid_corner_lon'] = xr.DataArray(
+            corner_lon.reshape((-1, 4)) / deg2rad,
+            dims=('grid_size', 'grid_corners'),
+            attrs={'units': 'degrees'},
+        )
+        dso.grid_corner_lon.encoding = {'dtype': np.float64, '_FillValue': None}
+
+        dso['grid_imask'] = xr.DataArray(
+            np.where(KMT > 0, 1, 0).reshape((-1,)), dims=('grid_size'), attrs={'units': 'unitless'}
+        )
+        dso.grid_imask.encoding = {'dtype': np.int32, '_FillValue': None}
+
+        grid_attrs.update({'conventions': 'SCRIP'})
+
+    else:
+        TLONG = np.where(TLONG < 0.0, TLONG + 2 * np.pi, TLONG)
+
+        dso['TLAT'] = xr.DataArray(
+            TLAT / deg2rad,
+            dims=('nlat', 'nlon'),
+            attrs={'units': 'degrees_north', 'long_name': 'T-grid latitude'},
+        )
+
+        dso['TLONG'] = xr.DataArray(
+            TLONG / deg2rad,
+            dims=('nlat', 'nlon'),
+            attrs={'units': 'degrees_east', 'long_name': 'T-grid longitude'},
+        )
+
+        dso['ULAT'] = xr.DataArray(
+            ULAT / deg2rad,
+            dims=('nlat', 'nlon'),
+            attrs={'units': 'degrees_north', 'long_name': 'U-grid latitude'},
+        )
+
+        dso['ULONG'] = xr.DataArray(
+            ULONG / deg2rad,
+            dims=('nlat', 'nlon'),
+            attrs={'units': 'degrees_east', 'long_name': 'U-grid longitude'},
+        )
+
+        dso['DXT'] = xr.DataArray(
+            DXT,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'units': 'cm',
+                'long_name': 'x-spacing centered at T points',
+                'coordinates': 'TLONG TLAT',
+            },
+        )
+
+        dso['DYT'] = xr.DataArray(
+            DYT,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'units': 'cm',
+                'long_name': 'y-spacing centered at T points',
+                'coordinates': 'TLONG TLAT',
+            },
+        )
+
+        dso['TAREA'] = xr.DataArray(
+            TAREA,
+            dims=('nlat', 'nlon'),
+            attrs={'units': 'cm^2', 'long_name': 'area of T cells', 'coordinates': 'TLONG TLAT'},
+        )
+
+        dso['KMT'] = xr.DataArray(
+            KMT,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'long_name': 'k Index of Deepest Grid Cell on T Grid',
+                'coordinates': 'TLONG TLAT',
+            },
+        )
+
+        dso['z_t'] = xr.DataArray(
+            z_t,
+            dims=('z_t'),
+            name='z_t',
+            attrs={
+                'units': 'cm',
+                'long_name': 'depth from surface to midpoint of layer',
+                'positive': 'down',
+            },
+        )
+
+        dso['dz'] = xr.DataArray(
+            dz,
+            dims=('z_t'),
+            coords={'z_t': dso.z_t},
+            attrs={'units': 'cm', 'long_name': 'thickness of layer k'},
+        )
+
+        dso['z_w'] = xr.DataArray(
+            z_w,
+            dims=('z_w'),
+            attrs={
+                'units': 'cm',
+                'positive': 'down',
+                'long_name': 'depth from surface to top of layer',
+            },
+        )
+
+        dso['z_w_bot'] = xr.DataArray(
+            z_w_bot,
+            dims=('z_w_bot'),
+            attrs={
+                'units': 'cm',
+                'positive': 'down',
+                'long_name': 'depth from surface to bottom of layer',
+            },
+        )
+
+    grid_attrs.update({'title': f'{grid_name} grid'})
+    dso.attrs = grid_attrs
 
     return dso
 
@@ -222,3 +261,33 @@ def _compute_TLAT_TLONG(ULAT, ULONG, TLAT, TLONG, nlat, nlon):
     # generate bottom row
     TLAT[0, :] = TLAT[1, :] - (TLAT[2, :] - TLAT[1, :])
     TLONG[0, :] = TLONG[1, :] - (TLONG[2, :] - TLONG[1, :])
+
+
+def _compute_corners(ULAT, ULONG):
+    """Compute grid corners."""
+
+    nlat, nlon = ULAT.shape
+    corner_lat = np.empty((nlat, nlon, 4), dtype=np.float)
+    corner_lon = np.empty((nlat, nlon, 4), dtype=np.float)
+
+    # NE corner
+    corner_lat[:, :, 0] = ULAT
+    corner_lon[:, :, 0] = ULONG
+
+    # NW corner (copy from NE corner of column to the left, assume zonal periodic bc)
+    corner_lat[:, :, 1] = np.roll(corner_lat[:, :, 0], 1, axis=1)
+    corner_lon[:, :, 1] = np.roll(corner_lon[:, :, 0], 1, axis=1)
+
+    # SW corner (copy from NW corner of row below, bottom row is extrapolated from 2 rows above)
+    corner_lat[1:nlat, :, 2] = corner_lat[0 : nlat - 1, :, 1]
+    corner_lon[1:nlat, :, 2] = corner_lon[0 : nlat - 1, :, 1]
+    corner_lat[0, :, 2] = corner_lat[1, :, 2] - (corner_lat[2, :, 2] - corner_lat[1, :, 2])
+    corner_lon[0, :, 2] = corner_lon[1, :, 2] - (corner_lon[2, :, 2] - corner_lon[1, :, 2])
+
+    # SE corner (copy from NE corner of row below, bottom row is extrapolated from 2 rows above)
+    corner_lat[1:nlat, :, 3] = corner_lat[0 : nlat - 1, :, 0]
+    corner_lon[1:nlat, :, 3] = corner_lon[0 : nlat - 1, :, 0]
+    corner_lat[0, :, 3] = corner_lat[1, :, 3] - (corner_lat[2, :, 3] - corner_lat[1, :, 3])
+    corner_lon[0, :, 3] = corner_lon[1, :, 3] - (corner_lon[2, :, 3] - corner_lon[1, :, 3])
+
+    return corner_lat, corner_lon
