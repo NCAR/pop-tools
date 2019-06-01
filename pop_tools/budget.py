@@ -1,17 +1,18 @@
 import datetime
 import glob
 
+import numpy as np
 import xarray as xr
 
 from .grid import get_grid
 
-MOLS_TO_MOLYR = 1e-9 * 86400.0 * 365.0
+NMOLS_TO_MOLYR = 1e-9 * 86400.0 * 365.0
 
 
 def _process_coords(ds, concat_dim='time', drop=True, extra_coord_vars=['time_bound']):
-    """Preprocessor function to drop all non-dim coords, which slows down concatenation.
+    """Preprocessor function to drop all non-dim coords, which slows down concatenation
 
-    Borrowed from @sridge in an issue thread.
+    Borrowed from @sridge in an issue thread
     """
 
     time_new = ds.time - datetime.timedelta(seconds=1)
@@ -30,7 +31,7 @@ def _process_coords(ds, concat_dim='time', drop=True, extra_coord_vars=['time_bo
 
 
 def _load_tracer_terms(basepath, filebase, tracer, var_list=None):
-    """Loads in the output necessary to compute tracer budget."""
+    """Loads in the tracer terms for current budget calculation"""
     model_vars = {
         'UE': f'UE_{tracer}',
         'VN': f'VN_{tracer}',
@@ -59,71 +60,237 @@ def _load_tracer_terms(basepath, filebase, tracer, var_list=None):
     # Drop coordinates, since they get in the way of roll, shift, diff.
     ds = ds.drop(ds.coords)
     # Rename all to z_t. Indices are handled with POP grid.
-    try:
+    if 'z_w_top' in ds.dims:
         ds = ds.rename({'z_w_top': 'z_t'})
-    except ValueError:
-        pass
-    try:
+    if 'z_w_bot' in ds.dims:
         ds = ds.rename({'z_w_bot': 'z_t'})
-    except ValueError:
-        pass
     return ds
 
 
 def _compute_kmax(budget_depth, z):
-    """Compute the k-index of the maximum budget depth."""
+    """Compute the k-index of the maximum budget depth"""
     kmax = (z <= budget_depth).argmin() - 1
     kmax = kmax.values
-    kmax_model = z.size
-
     # This only occurs when the full depth is requested (or budget_depth
     # is greater than the maximum model depth)
     if kmax == -1:
-        kmax = kmax_model
-        full_depth = True
-    else:
-        full_depth = False
-    return kmax, full_depth
+        kmax = None
+    return kmax
 
 
-def _volume_area_normalize(ds, tracer, vol, area):
-    """Converts from volume- and area-dependent units to just tendencies."""
-    volNormalize = ['UE', 'VN', 'WT', 'KPP_SRC', 'SMS']
-    volNormalizeSignFlip = ['HDIFE', 'HDIFN', 'HDIFB', 'DIA_IMPVF']
-    areaNormalize = ['FvICE', 'FvPER', 'STF']
-    volNorm = ds[volNormalize] * vol
-    volNormFlip = ds[volNormalizeSignFlip] * -vol
-    areaNorm = ds[areaNormalize] * area
-    ds = xr.merge([volNorm, volNormFlip, areaNorm])
+def _convert_to_tendency(ds, normalizer, sign=1, kmax=None):
+    """Converts from volume- and area-dependent units to tendencies"""
+    if (kmax is not None) and ('z_t' in normalizer.dims):
+        normalizer = normalizer.isel(z_t=slice(0, kmax + 1))
+    ds = ds * normalizer * sign
     ds.attrs['units'] = 'nmol/s'
     return ds
 
 
-def regional_tracer_budget(basepath, filebase, tracer, budget_depth=None):
-    """Compute regional tracer budget."""
-    ds = _load_tracer_terms(basepath, filebase, tracer)
-
-    # Currently hard-coded.
-    grid_f = get_grid('POP_gx1v7')
+def _process_grid(grid):
+    """Load in POP grid and process coordinates for budget calculation"""
+    grid_f = get_grid(grid)
 
     # Extract needed coordinates.
     dz = grid_f.dz.drop('z_t')
-    area = grid_f.TAREA
-    vol = area * dz
-    z = grid_f.z_w_bot.drop('z_w_bot')
+    area = (grid_f.TAREA).rename('area')
+    vol = (area * dz).rename('vol')
+    z = (grid_f.z_w_bot.drop('z_w_bot')).rename('z')
+    return xr.merge([dz, area, vol, z])
+
+
+def _convert_units(ds):
+    """Converts from nmol/s to mol/yr and adds attribute label."""
+    ds *= NMOLS_TO_MOLYR
+    ds.attrs['units'] = 'mol/yr'
+    return ds
+
+
+def _compute_lateral_advection(basepath, filebase, tracer, grid, mask, kmax=None):
+    """Compute lateral advection (UE and VN)"""
+    print('Computing lateral advection...')
+    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['UE', 'VN'])
+
+    if kmax is not None:
+        ds = ds.isel(z_t=slice(0, kmax + 1))
+
+    # Convert to tendency.
+    ds = _convert_to_tendency(ds, grid.vol, kmax=kmax)
+
+    # Compute advection.
+    mask_shift = mask.roll(nlon=-1, roll_coords=True)
+    ladv_zonal = ds.UE.where(mask_shift).roll(nlon=1, roll_coords=True) - ds.UE.where(mask)
+    mask_shift = mask.roll(nlat=-1, roll_coords=True)
+    ladv_merid = ds.VN.where(mask_shift).roll(nlat=1, roll_coords=True) - ds.VN.where(mask)
+
+    # Sum zonal and meridional components..
+    ladv = (ladv_zonal + ladv_merid).rename('ladv')
+
+    # Sum over control volume.
+    ladv = ladv.sum(['z_t', 'nlat', 'nlon'])
+    ladv = _convert_units(ladv)
+    ladv.attrs['long_name'] = 'lateral advection'
+    return ladv.load()
+
+
+def _compute_vertical_advection(basepath, filebase, tracer, grid, mask, kmax=None):
+    """Compute vertical advection (WT)"""
+    print('Computing vertical advection...')
+    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['WT'])
+
+    if kmax is not None:
+        # Need one level below max depth to compute divergence into bottom layer.
+        ds = ds.isel(z_t=slice(0, kmax + 2))
+    ds = ds.where(mask)
+
+    # Convert to tendency.
+    if kmax is not None:
+        ds = _convert_to_tendency(ds, grid.vol, kmax=kmax + 1)
+    else:
+        ds = _convert_to_tendency(ds, grid.vol)
+
+    # Compute divergence of vertical advection.
+    vadv = (ds.WT.shift(z_t=-1).fillna(0) - ds.WT).isel(z_t=slice(0, -1))
+    vadv = vadv.sum(['z_t', 'nlat', 'nlon'])
+    vadv = _convert_units(vadv)
+    vadv.attrs['long_name'] = 'vertical advection'
+    return vadv.load()
+
+
+def _compute_lateral_mixing(basepath, filebase, tracer, grid, mask, kmax=None):
+    """Compute lateral mixing component."""
+    print('Computing lateral mixing...')
+    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['HDIFN', 'HDIFE', 'HDIFB'])
+
+    if kmax is not None:
+        ds = ds.isel(z_t=slice(0, kmax + 1))
+
+    # Flip sign so that positive direction is upwards.
+    ds = _convert_to_tendency(ds, grid.vol, sign=-1, kmax=kmax)
+
+    # Compute divergence for HDIFN/HDIFE.
+    mask_shift = mask.roll(nlon=-1, roll_coords=True)
+    lmix_E = ds.HDIFE.where(mask_shift).roll(nlon=1, roll_coords=True) - ds.HDIFE.where(mask)
+    mask_shift = mask.roll(nlat=-1, roll_coords=True)
+    lmix_N = ds.HDIFN.where(mask_shift).roll(nlat=1, roll_coords=True) - ds.HDIFN.where(mask)
+
+    # Compute divergence for HDIFB
+    lmix_B = ds.HDIFB.where(mask)
+    # Place "cap" of zeros above top layer to diff upwards.
+    ny, nx = lmix_B.nlat.size, lmix_B.nlon.size
+    zero_cap = xr.DataArray(np.zeros((ny, nx)), dims=['nlat', 'nlon'])
+    lmix_B = xr.concat([zero_cap, lmix_B], dim='z_t')
+    lmix_B = lmix_B.diff('z_t')
+
+    # Sum zonal and meridional components.
+    lmix = (lmix_N + lmix_E).rename('lmix')
+    lmix = lmix.sum(['z_t', 'nlat', 'nlon'])
+    lmix = _convert_units(lmix)
+    lmix.attrs['long_name'] = 'lateral mixing'
+
+    # Bottom lateral mixing
+    # NOTE: Should this combine with the above terms?
+    lmix_B = lmix_B.rename('lmix_B')
+    lmix_B = lmix_B.sum(['z_t', 'nlat', 'nlon'])
+    lmix_B = _convert_units(lmix_B)
+    lmix_B.attrs['long_name'] = 'lateral mixing (vertical component)'
+    return lmix.load(), lmix_B.load()
+
+
+def _compute_vertical_mixing(basepath, filebase, tracer, grid, mask, kmax=None):
+    """Compute contribution from vertical mixing."""
+    print('Computing vertical mixing...')
+    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['DIA_IMPVF', 'KPP_SRC'])
+
+    if kmax is not None:
+        ds = ds.isel(z_t=slice(0, kmax + 1))
+
+    # Apply mask.
+    ds = ds.where(mask)
+
+    # Only need to flip sign of DIA_IMPVF.
+    ds['DIA_IMPVF'] = _convert_to_tendency(ds['DIA_IMPVF'], grid.area, sign=-1, kmax=kmax)
+    ds['KPP_SRC'] = _convert_to_tendency(ds['KPP_SRC'], grid.vol, kmax=kmax)
+
+    # Compute divergence of diapycnal mixing.
+    diadiff = ds.DIA_IMPVF
+    # Place cap of zeros above top layer to diff upwards.
+    ny, nx = diadiff.nlat.size, diadiff.nlon.size
+    zero_cap = xr.DataArray(np.zeros((ny, nx)), dims=['nlat', 'nlon'])
+    diadiff = xr.concat([zero_cap, diadiff], dim='z_t')
+    diadiff = diadiff.diff('z_t')
+
+    # Sum KPP and diapycnal mixing to create vmix term.
+    vmix = (ds.KPP_SRC + diadiff).rename('vmix')
+    vmix = vmix.sum(['z_t', 'nlat', 'nlon'])
+    vmix = _convert_units(vmix)
+    vmix.attrs['long_name'] = 'vertical mixing'
+    return vmix.load()
+
+
+def _compute_SMS(basepath, filebase, tracer, grid, mask, kmax=None):
+    """Compute SMS term from biology."""
+    print('Computing source/sink...')
+    # NOTE: Resample SMS to annual.
+    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['SMS'])
+    if kmax is not None:
+        ds = ds.isel(z_t=slice(0, kmax + 1))
+    ds = ds.where(mask)
+    # Rename variable here to 'sms'
+    ds = _convert_to_tendency(ds, grid.vol, kmax=kmax)
+    sms = ds.SMS.sum(['z_t', 'nlat', 'nlon'])
+    sms = _convert_units(sms)
+    sms.attrs['long_name'] = 'source/sink'
+    return sms.load()
+
+
+def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=None):
+    """Return a regional tracer budget on the POP grid.
+
+    Parameters
+    ----------
+    basepath : str
+      Path to folder with raw POP output
+    filebase : str
+      Base name of file (e.g., 'g.DPLE.GECOIAF.T62_g16.009.chey.pop.h.')
+    tracer : str
+      Tracer variable name (e.g., 'DIC')
+    mask : `xarray.DataArray`
+      Mask on POP grid with integers for region of interest
+    grid : str
+      POP grid (e.g., POP_gx3v7, POP_gx1v7, POP_tx0.1v3)
+    budget_depth : int, optional
+      Depth to compute budget to in m. If None, compute for full depth.
+
+    Returns
+    -------
+    reg_budget: `xarray.Dataset`
+      Dataset containing integrated budget terms over masked POP volume.
+    """
+
+    grid = _process_grid(grid)
+
+    # Force mask to logical.
+    # NOTE: Take integer input for mask.
+    mask = mask == 3
+    mask = mask.drop(mask.coords)
 
     # Compute k-index for budget depth.
     if budget_depth is not None:
         # Convert from m to cm.
         budget_depth *= 100
-        kmax, full_depth = _compute_kmax(budget_depth, z)
+        kmax = _compute_kmax(budget_depth, grid.z)
     else:
-        kmax = z.size
-        full_depth = True
-    # NOTE: remove. just using to avoid flake8 issues.
-    kmax = kmax
-    full_depth = full_depth
+        kmax = None
 
-    # Convert raw units to tendency terms.
-    ds = _volume_area_normalize(ds, tracer, vol, area)
-    return ds
+    ladv = _compute_lateral_advection(basepath, filebase, tracer, grid, mask, kmax=kmax)
+    vadv = _compute_vertical_advection(basepath, filebase, tracer, grid, mask, kmax=kmax)
+    lmix, lmix_B = _compute_lateral_mixing(basepath, filebase, tracer, grid, mask, kmax=kmax)
+    vmix = _compute_vertical_mixing(basepath, filebase, tracer, grid, mask, kmax=kmax)
+    # only compute if a certain tracer.
+    # NOTE: resample to annual
+    sms = _compute_SMS(basepath, filebase, tracer, grid, mask, kmax=kmax)
+    # surface flux (only compute if a certain tracer)
+    # NOTE: resample to annual
+    # create dataset
+    return ladv, vadv, lmix, lmix_B, vmix, sms
