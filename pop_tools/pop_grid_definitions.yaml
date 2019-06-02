@@ -16,6 +16,15 @@ POP_gx1v7:
     region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx1v7/grid/region_mask_20151008.ieeei4'
     type: dipole
 
+POP_gx1v6:
+    lateral_dims: [384, 320]
+    vertical_dims: 60
+    vert_grid_file: '{{INPUT_TEMPLATES}}/gx1v7_vert_grid'
+    horiz_grid_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/horiz_grid_20010402.ieeer8'
+    topography_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/topography_20090204.ieeei4'
+    region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/region_mask_20090205.ieeei4'
+    type: dipole
+
 POP_tx0.1v3:
     lateral_dims: [2400, 3600]
     vertical_dims: 62
