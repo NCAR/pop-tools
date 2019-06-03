@@ -9,6 +9,19 @@ from .grid import get_grid
 NMOLS_TO_MOLYR = 1e-9 * 86400.0 * 365.0
 
 
+def _process_grid(grid):
+    """Load in POP grid and process coordinates for budget calculation"""
+    grid_f = get_grid(grid)
+
+    # Extract needed coordinates.
+    dz = grid_f.dz.drop('z_t')
+    area = (grid_f.TAREA).rename('area')
+    vol = (area * dz).rename('vol')
+    z = (grid_f.z_w_bot.drop('z_w_bot')).rename('z')
+    mask = grid_f.REGION_MASK.rename('mask')
+    return xr.merge([dz, area, vol, z, mask])
+
+
 def _process_coords(ds, concat_dim='time', drop=True, extra_coord_vars=['time_bound']):
     """Preprocessor function to drop all non-dim coords, which slows down concatenation
 
@@ -89,18 +102,6 @@ def _convert_to_tendency(ds, normalizer, sign=1, kmax=None):
     ds = ds * normalizer * sign
     ds.attrs['units'] = 'nmol/s'
     return ds
-
-
-def _process_grid(grid):
-    """Load in POP grid and process coordinates for budget calculation"""
-    grid_f = get_grid(grid)
-
-    # Extract needed coordinates.
-    dz = grid_f.dz.drop('z_t')
-    area = (grid_f.TAREA).rename('area')
-    vol = (area * dz).rename('vol')
-    z = (grid_f.z_w_bot.drop('z_w_bot')).rename('z')
-    return xr.merge([dz, area, vol, z])
 
 
 def _convert_units(ds):
@@ -265,7 +266,9 @@ def _compute_surface_fluxes(basepath, filebase, tracer, grid, mask):
     return vf.load(), stf.load()
 
 
-def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=None):
+def regional_tracer_budget(
+    basepath, filebase, tracer, grid, mask=None, mask_int=None, budget_depth=None
+):
     """Return a regional tracer budget on the POP grid.
 
     Parameters
@@ -276,10 +279,12 @@ def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=
       Base name of file (e.g., 'g.DPLE.GECOIAF.T62_g16.009.chey.pop.h.')
     tracer : str
       Tracer variable name (e.g., 'DIC')
-    mask : `xarray.DataArray`
-      Mask on POP grid with integers for region of interest
     grid : str
       POP grid (e.g., POP_gx3v7, POP_gx1v7, POP_tx0.1v3)
+    mask : `xarray.DataArray`, optional
+      Mask on POP grid with integers for region of interest. If None, use REGION_MASK.
+    mask_int : int
+      Number corresponding to integer on mask. E.g., 1 for the Southern Ocean for REGION_MASK.
     budget_depth : int, optional
       Depth to compute budget to in m. If None, compute for full depth.
 
@@ -290,10 +295,12 @@ def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=
     """
 
     grid = _process_grid(grid)
-
-    # Force mask to logical.
-    # NOTE: Take integer input for mask.
-    mask = mask == 3
+    if mask is None:
+        # Default to REGION_MASK from POP.
+        mask = grid.mask
+    if mask_int is None:
+        raise ValueError('Please supply an integer for your mask via the `mask_int` keyword.')
+    mask = mask == mask_int
     mask = mask.drop(mask.coords)
 
     # Compute k-index for budget depth.
@@ -310,5 +317,8 @@ def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=
     vmix = _compute_vertical_mixing(basepath, filebase, tracer, grid, mask, kmax=kmax)
     sms = _compute_SMS(basepath, filebase, tracer, grid, mask, kmax=kmax)
     vf, stf = _compute_surface_fluxes(basepath, filebase, tracer, grid, mask)
-    # create dataset
-    return ladv, vadv, lmix, lmix_B, vmix, sms, vf, stf
+
+    # Merge into dataset.
+    reg_budget = xr.merge([ladv, vadv, lmix, lmix_B, vmix, sms, vf, stf])
+    reg_budget.attrs['units'] = 'mol/yr'
+    return reg_budget
