@@ -30,7 +30,7 @@ def _process_coords(ds, concat_dim='time', drop=True, extra_coord_vars=['time_bo
         return ds.set_coords(coord_vars)
 
 
-def _load_tracer_terms(basepath, filebase, tracer, var_list=None):
+def _load_tracer_terms(basepath, filebase, tracer, var_list=None, drop_time=True):
     """Loads in the tracer terms for current budget calculation"""
     model_vars = {
         'UE': f'UE_{tracer}',
@@ -58,7 +58,11 @@ def _load_tracer_terms(basepath, filebase, tracer, var_list=None):
         # Resample the monthly output to annual.
         ds = ds.merge(ds_i)
     # Drop coordinates, since they get in the way of roll, shift, diff.
-    ds = ds.drop(ds.coords)
+    if drop_time:
+        dropCoords = ds.coords
+    else:
+        dropCoords = [c for c in ds.coords if c != 'time']
+    ds = ds.drop(dropCoords)
     # Rename all to z_t. Indices are handled with POP grid.
     if 'z_w_top' in ds.dims:
         ds = ds.rename({'z_w_top': 'z_t'})
@@ -151,7 +155,7 @@ def _compute_vertical_advection(basepath, filebase, tracer, grid, mask, kmax=Non
 
     # Compute divergence of vertical advection.
     vadv = (ds.WT.shift(z_t=-1).fillna(0) - ds.WT).isel(z_t=slice(0, -1))
-    vadv = vadv.sum(['z_t', 'nlat', 'nlon'])
+    vadv = vadv.sum(['z_t', 'nlat', 'nlon']).rename('vadv')
     vadv = _convert_units(vadv)
     vadv.attrs['long_name'] = 'vertical advection'
     return vadv.load()
@@ -231,17 +235,34 @@ def _compute_vertical_mixing(basepath, filebase, tracer, grid, mask, kmax=None):
 def _compute_SMS(basepath, filebase, tracer, grid, mask, kmax=None):
     """Compute SMS term from biology."""
     print('Computing source/sink...')
-    # NOTE: Resample SMS to annual.
-    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['SMS'])
+    ds = _load_tracer_terms(basepath, filebase, tracer, var_list=['SMS'], drop_time=False)
     if kmax is not None:
         ds = ds.isel(z_t=slice(0, kmax + 1))
     ds = ds.where(mask)
-    # Rename variable here to 'sms'
-    ds = _convert_to_tendency(ds, grid.vol, kmax=kmax)
-    sms = ds.SMS.sum(['z_t', 'nlat', 'nlon'])
+    ds = _convert_to_tendency(ds, grid.vol, kmax=kmax).rename({'SMS': 'sms'})
+    sms = ds.sms.sum(['z_t', 'nlat', 'nlon'])
     sms = _convert_units(sms)
+    sms = sms.groupby('time.year').mean('time').rename({'year': 'time'})
     sms.attrs['long_name'] = 'source/sink'
     return sms.load()
+
+
+def _compute_surface_fluxes(basepath, filebase, tracer, grid, mask):
+    """Computes surface fluxes of tracer."""
+    ds = _load_tracer_terms(
+        basepath, filebase, tracer, var_list=['FvICE', 'FvPER', 'STF'], drop_time=False
+    )
+    ds = ds.where(mask)
+    ds = _convert_to_tendency(ds, grid.area)
+    vf = (ds.FvICE + ds.FvPER).rename('vf').sum(['nlat', 'nlon'])
+    stf = (ds.STF).rename('stf').sum(['nlat', 'nlon'])
+    vf = _convert_units(vf)
+    stf = _convert_units(stf)
+    vf = vf.groupby('time.year').mean('time').rename({'year': 'time'})
+    stf = stf.groupby('time.year').mean('time').rename({'year': 'time'})
+    vf.attrs['long_name'] = 'virtual flux'
+    stf.attrs['long_name'] = 'surface tracer flux'
+    return vf.load(), stf.load()
 
 
 def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=None):
@@ -287,10 +308,7 @@ def regional_tracer_budget(basepath, filebase, tracer, mask, grid, budget_depth=
     vadv = _compute_vertical_advection(basepath, filebase, tracer, grid, mask, kmax=kmax)
     lmix, lmix_B = _compute_lateral_mixing(basepath, filebase, tracer, grid, mask, kmax=kmax)
     vmix = _compute_vertical_mixing(basepath, filebase, tracer, grid, mask, kmax=kmax)
-    # only compute if a certain tracer.
-    # NOTE: resample to annual
     sms = _compute_SMS(basepath, filebase, tracer, grid, mask, kmax=kmax)
-    # surface flux (only compute if a certain tracer)
-    # NOTE: resample to annual
+    vf, stf = _compute_surface_fluxes(basepath, filebase, tracer, grid, mask)
     # create dataset
-    return ladv, vadv, lmix, lmix_B, vmix, sms
+    return ladv, vadv, lmix, lmix_B, vmix, sms, vf, stf
