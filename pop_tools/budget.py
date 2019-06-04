@@ -63,7 +63,7 @@ def _compute_horizontal_divergence(da, mask, direction=None):
         div = da.where(mask_roll).roll(nlon=1, roll_coords=True) - da.where(mask)
     elif direction == 'meridional':
         mask_roll = mask.roll(nlat=-1, roll_coords=True)
-        div = da.where(mask_roll).roll(nlon=1, roll_coords=True) - da.where(mask)
+        div = da.where(mask_roll).roll(nlat=1, roll_coords=True) - da.where(mask)
     else:
         raise ValueError("Please input either 'zonal' or 'meridional' for direction.")
     return div
@@ -93,7 +93,7 @@ def _compute_lateral_advection(ds, grid, mask, kmax=None):
     ladv = (ladv_zonal + ladv_merid).rename('ladv').sum('z_t')
     ladv = _convert_units(ladv)
     ladv.attrs['long_name'] = 'lateral advection'
-    return ladv
+    return ladv.load()
 
 
 def _compute_lateral_mixing(ds, grid, mask, kmax=None):
@@ -114,7 +114,7 @@ def _compute_lateral_mixing(ds, grid, mask, kmax=None):
     lmix = (lmix_merid + lmix_zonal + lmix_B).rename('lmix').sum('z_t')
     lmix = _convert_units(lmix)
     lmix.attrs['long_name'] = 'lateral mixing'
-    return lmix
+    return lmix.load()
 
 
 def _compute_vertical_advection(ds, grid, mask, kmax=None):
@@ -136,7 +136,7 @@ def _compute_vertical_advection(ds, grid, mask, kmax=None):
     vadv = vadv.sum('z_t').rename('vadv')
     vadv = _convert_units(vadv)
     vadv.attrs['long_name'] = 'vertical advection'
-    return vadv
+    return vadv.load()
 
 
 def _compute_vertical_mixing(ds, grid, mask, kmax=None):
@@ -158,7 +158,7 @@ def _compute_vertical_mixing(ds, grid, mask, kmax=None):
     vmix = (ds.KPP_SRC + diadiff).rename('vmix').sum('z_t')
     vmix = _convert_units(vmix)
     vmix.attrs['long_name'] = 'vertical mixing'
-    return vmix
+    return vmix.load()
 
 
 def _compute_SMS(ds, grid, mask, kmax=None):
@@ -173,11 +173,12 @@ def _compute_SMS(ds, grid, mask, kmax=None):
     # SMS comes as monthly output. Need to resample to annual for comparison to the other tracer budget terms.
     ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     ds.attrs['long_name'] = 'source/sink'
-    return ds
+    return ds.load()
 
 
 def _compute_surface_fluxes(ds, grid, mask):
     """Computes surface fluxes of tracer."""
+    print('Computing surface fluxes...')
     ds = ds[['FvICE', 'FvPER', 'STF']]
     ds = ds.where(mask)
     ds = _convert_to_tendency(ds, grid.area)
@@ -187,7 +188,7 @@ def _compute_surface_fluxes(ds, grid, mask):
     stf = (ds.STF).rename('stf')
     vf.attrs['long_name'] = 'virtual flux'
     stf.attrs['long_name'] = 'surface tracer flux'
-    return vf, stf
+    return vf.load(), stf.load()
 
 
 def _process_input_dataset(ds):
@@ -280,4 +281,4 @@ def regional_tracer_budget(ds, grid, mask=None, mask_int=None, budget_depth=None
     reg_budget.attrs['units'] = 'mol/yr'
     if sum_area:
         reg_budget = reg_budget.sum(['nlat', 'nlon'])
-    return reg_budget.load()
+    return reg_budget
