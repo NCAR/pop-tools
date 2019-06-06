@@ -23,7 +23,6 @@ def _process_grid(grid):
 
 def _compute_kmax(budget_depth, z):
     """Compute the k-index of the maximum budget depth"""
-    # NOTE: Change this to other argmin() method.
     kmax = (z <= budget_depth).argmin() - 1
     kmax = kmax.values
     # This only occurs when the full depth is requested (or `budget_depth` is greater than the maximum POP depth`)
@@ -32,11 +31,21 @@ def _compute_kmax(budget_depth, z):
     return kmax
 
 
-def _convert_to_tendency(ds, normalizer, sign=1, kmax=None):
-    """Converts from volume- and area-dependent units to tendencies"""
-    if (kmax is not None) and ('z_t' in normalizer.dims):
-        normalizer = normalizer.isel(z_t=slice(0, kmax + 1))
-    ds = ds * normalizer * sign
+def _convert_to_tendency(ds, grid, sign=1, kmax=None, force_area=False):
+    """Converts from volume- and area-dependent units to tendencies
+
+    `force_area` is used for DIA_IMPVF which typically has a depth-component,
+    but requires area-normalization.
+    """
+    if force_area:
+        norm = grid.area
+    elif 'z_t' in ds.dims:
+        norm = grid.vol
+        if kmax is not None:
+            norm = norm.isel(z_t=slice(0, kmax + 1))
+    else:
+        norm = grid.area
+    ds = ds * norm * sign
     ds.attrs['units'] = 'nmol/s'
     return ds
 
@@ -45,6 +54,24 @@ def _convert_units(ds):
     """Converts from nmol/s to mol/yr and adds attribute label"""
     ds *= NMOLS_TO_MOLYR
     ds.attrs['units'] = 'mol/yr'
+    return ds
+
+
+def _subset_slice_mask(ds, var_list=None, mask=None, kmax=None):
+    """Processes the raw dataset to prepare to compute the given budget term.
+
+    This will subset to the appropriate variables, slice to a given k-index,
+    and mask
+    """
+    ds = ds[var_list]
+    # Checks that the variable has a depth component before slicing.
+    if (kmax is not None) and ('z_t' in ds.dims):
+        ds = ds.isel(z_t=slice(0, kmax + 1))
+    if mask is not None:
+        ds = ds.where(mask)
+    # If output are already in annual format, this is not an intensive task
+    # and returns the same DataArray.
+    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     return ds
 
 
@@ -72,7 +99,7 @@ def _compute_horizontal_divergence(da, mask, direction=None):
 
 
 def _compute_vertical_divergence(da):
-    """Computes divergence of a tracer flux in the vertical"""
+    """Computes divergence of a tracer flux in the vertical on z_w_bot"""
     ny, nx = da.nlat.size, da.nlon.size
     # Places a cap of zeros on top of the ocean. This makes it easy to use the `diff` function
     # with a positive z heading toward shallower depths.
@@ -85,14 +112,11 @@ def _compute_vertical_divergence(da):
 def _compute_lateral_advection(ds, grid, mask, kmax=None):
     """Compute lateral advection component of budget"""
     print('Computing lateral advection...')
-    ds = ds[['UE', 'VN']]
-    if kmax is not None:
-        ds = ds.isel(z_t=slice(0, kmax + 1))
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
-    ds = _convert_to_tendency(ds, grid.vol, kmax=kmax)
+    ds = _subset_slice_mask(ds, var_list=['UE', 'VN'], kmax=kmax)
+    ds = _convert_to_tendency(ds, grid, kmax=kmax)
     ladv_zonal = _compute_horizontal_divergence(ds.UE, mask, direction='zonal')
     ladv_merid = _compute_horizontal_divergence(ds.VN, mask, direction='meridional')
-    ladv = (ladv_zonal + ladv_merid).rename('ladv').sum('z_t')
+    ladv = (ladv_zonal + ladv_merid).rename('ladv')
     ladv = _convert_units(ladv)
     ladv.attrs['long_name'] = 'lateral advection'
     return ladv.load()
@@ -101,19 +125,17 @@ def _compute_lateral_advection(ds, grid, mask, kmax=None):
 def _compute_lateral_mixing(ds, grid, mask, kmax=None):
     """Compute lateral mixing component."""
     print('Computing lateral mixing...')
-    ds = ds[['HDIFN', 'HDIFE', 'HDIFB']]
-    if kmax is not None:
-        ds = ds.isel(z_t=slice(0, kmax + 1))
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
+    ds = _subset_slice_mask(ds, var_list=['HDIFN', 'HDIFE', 'HDIFB'], kmax=kmax)
+
     # Flip sign so that positive direction is upwards.
-    ds = _convert_to_tendency(ds, grid.vol, sign=-1, kmax=kmax)
+    ds = _convert_to_tendency(ds, grid, sign=-1, kmax=kmax)
     lmix_zonal = _compute_horizontal_divergence(ds.HDIFE, mask, direction='zonal')
     lmix_merid = _compute_horizontal_divergence(ds.HDIFN, mask, direction='meridional')
     lmix_B = ds.HDIFB.where(mask)
     lmix_B = _compute_vertical_divergence(lmix_B)
 
     # Sum all lateral mixing components
-    lmix = (lmix_merid + lmix_zonal + lmix_B).rename('lmix').sum('z_t')
+    lmix = (lmix_merid + lmix_zonal + lmix_B).rename('lmix')
     lmix = _convert_units(lmix)
     lmix.attrs['long_name'] = 'lateral mixing'
     return lmix.load()
@@ -122,20 +144,15 @@ def _compute_lateral_mixing(ds, grid, mask, kmax=None):
 def _compute_vertical_advection(ds, grid, mask, kmax=None):
     """Compute vertical advection (WT)"""
     print('Computing vertical advection...')
-    ds = ds['WT']
-    if kmax is not None:
-        # Need one level below max depth to compute divergence into bottom layer.
-        ds = ds.isel(z_t=slice(0, kmax + 2))
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
-    ds = ds.where(mask)
-    if kmax is not None:
-        ds = _convert_to_tendency(ds, grid.vol, kmax=kmax + 1)
-    else:
-        ds = _convert_to_tendency(ds, grid.vol)
+    # Need one layer below kmax to get divergence of vertical advection correct.
+    ds = _subset_slice_mask(ds, var_list=['WT'], kmax=kmax + 1, mask=mask)
+    ds = _convert_to_tendency(ds, grid, kmax=kmax + 1)
 
     # Compute divergence of vertical advection.
-    vadv = (ds.shift(z_t=-1).fillna(0) - ds).isel(z_t=slice(0, -1))
-    vadv = vadv.sum('z_t').rename('vadv')
+    # NOTE: Is there a case where WT_{tracer} would be saved out as a vertical
+    # integral? In that case, this would break.
+    vadv = (ds.WT.shift(z_t=-1).fillna(0) - ds.WT).isel(z_t=slice(0, -1))
+    vadv = vadv.rename('vadv')
     vadv = _convert_units(vadv)
     vadv.attrs['long_name'] = 'vertical advection'
     return vadv.load()
@@ -144,20 +161,17 @@ def _compute_vertical_advection(ds, grid, mask, kmax=None):
 def _compute_vertical_mixing(ds, grid, mask, kmax=None):
     """Compute contribution from vertical mixing."""
     print('Computing vertical mixing...')
-    ds = ds[['DIA_IMPVF', 'KPP_SRC']]
-    if kmax is not None:
-        ds = ds.isel(z_t=slice(0, kmax + 1))
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
-    ds = ds.where(mask)
+    ds = _subset_slice_mask(ds, var_list=['DIA_IMPVF', 'KPP_SRC'], kmax=kmax, mask=mask)
+
     # Only need to flip sign of DIA_IMPVF.
-    ds['DIA_IMPVF'] = _convert_to_tendency(ds['DIA_IMPVF'], grid.area, sign=-1, kmax=kmax)
-    ds['KPP_SRC'] = _convert_to_tendency(ds['KPP_SRC'], grid.vol, kmax=kmax)
+    ds['DIA_IMPVF'] = _convert_to_tendency(ds['DIA_IMPVF'], grid, sign=-1, force_area=True)
+    ds['KPP_SRC'] = _convert_to_tendency(ds['KPP_SRC'], grid, kmax=kmax)
 
     # Compute divergence of diapycnal mixing
     diadiff = _compute_vertical_divergence(ds.DIA_IMPVF)
 
     # Sum KPP and diapycnal mixing to create vmix term.
-    vmix = (ds.KPP_SRC + diadiff).rename('vmix').sum('z_t')
+    vmix = (ds.KPP_SRC + diadiff).rename('vmix')
     vmix = _convert_units(vmix)
     vmix.attrs['long_name'] = 'vertical mixing'
     return vmix.load()
@@ -166,18 +180,9 @@ def _compute_vertical_mixing(ds, grid, mask, kmax=None):
 def _compute_SMS(ds, grid, mask, kmax=None):
     """Compute SMS term from biology."""
     print('Computing source/sink...')
-    ds = ds['SMS']
-    if (kmax is not None) and ('z_t' in ds.dims):
-        ds = ds.isel(z_t=slice(0, kmax + 1))
-    ds = ds.where(mask)
-    # Commonly output by POP as Jint_100m. So in those cases there won't be a
-    # depth-resolved dimension.
-    if 'z_t' in ds.dims:
-        ds = _convert_to_tendency(ds, grid.vol, kmax=kmax).rename('sms').sum('z_t')
-    else:
-        ds = _convert_to_tendency(ds, grid.area).rename('sms')
+    ds = _subset_slice_mask(ds, var_list=['SMS'], kmax=kmax, mask=mask)
+    ds = _convert_to_tendency(ds, grid, kmax=kmax)
     ds = _convert_units(ds)
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     ds.attrs['long_name'] = 'source/sink'
     return ds.load()
 
@@ -185,11 +190,9 @@ def _compute_SMS(ds, grid, mask, kmax=None):
 def _compute_surface_flux(ds, grid, mask):
     """Computes virtual fluxes of tracer."""
     print('Computing surface flux...')
-    ds = ds['STF']
-    ds = ds.where(mask)
-    ds = _convert_to_tendency(ds, grid.area)
+    ds = _subset_slice_mask(ds, var_list=['STF'], mask=mask)
+    ds = _convert_to_tendency(ds, grid)
     ds = _convert_units(ds)
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     stf = ds.rename('stf')
     stf.attrs['long_name'] = 'surface tracer flux'
     return stf.load()
@@ -198,11 +201,9 @@ def _compute_surface_flux(ds, grid, mask):
 def _compute_virtual_flux(ds, grid, mask):
     """Computes virtual fluxes of tracer."""
     print('Computing virtual fluxes...')
-    ds = ds[['FvICE', 'FvPER']]
-    ds = ds.where(mask)
-    ds = _convert_to_tendency(ds, grid.area)
+    ds = _subset_slice_mask(ds, var_list=['FvICE', 'FvPER'], mask=mask)
+    ds = _convert_to_tendency(ds, grid)
     ds = _convert_units(ds)
-    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     vf = (ds.FvICE + ds.FvPER).rename('vf')
     vf.attrs['long_name'] = 'virtual flux'
     return vf.load()
@@ -239,7 +240,9 @@ def _process_input_dataset(ds):
     return ds
 
 
-def regional_tracer_budget(ds, grid, mask=None, mask_int=None, budget_depth=None, sum_area=True):
+def regional_tracer_budget(
+    ds, grid, mask=None, mask_int=None, budget_depth=None, sum_depth=True, sum_area=True
+):
     """Return a regional tracer budget on the POP grid.
 
     Parameters
@@ -266,8 +269,10 @@ def regional_tracer_budget(ds, grid, mask=None, mask_int=None, budget_depth=None
       Number corresponding to integer on mask. E.g., 1 for the Southern Ocean for REGION_MASK.
     budget_depth : int, optional
       Depth to compute budget to in m. If None, compute for full depth.
+    sum_depth : bool, optional
+      If True, sum across z_t to return a budget integrated over depth.
     sum_area : bool, optional
-      If True, sum across nlat/nlon to return a budget integrated over the full control volume.
+      If True, sum across nlat/nlon to return a budget integrated over area.
 
     Returns
     -------
@@ -321,7 +326,8 @@ def regional_tracer_budget(ds, grid, mask=None, mask_int=None, budget_depth=None
         warnings.warn(
             'FvICE and FvPER are not in the input dataset and thus virtual fluxes will not be computed.'
         )
-
+    if sum_depth:
+        reg_budget = reg_budget.sum('z_t')
     if sum_area:
         reg_budget = reg_budget.sum(['nlat', 'nlon'])
     reg_budget.attrs['units'] = 'mol/yr'
