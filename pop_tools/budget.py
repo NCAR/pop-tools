@@ -167,7 +167,7 @@ def _compute_SMS(ds, grid, mask, kmax=None):
     """Compute SMS term from biology."""
     print('Computing source/sink...')
     ds = ds['SMS']
-    if kmax is not None:
+    if (kmax is not None) and ('z_t' in ds.dims):
         ds = ds.isel(z_t=slice(0, kmax + 1))
     ds = ds.where(mask)
     # Commonly output by POP as Jint_100m. So in those cases there won't be a
@@ -223,8 +223,10 @@ def _process_input_dataset(ds):
     coord_vars = [c for c in ds.coords if c != 'time']
     ds = ds.drop(coord_vars)
     if 'z_w_top' in ds.dims:
+        ds = ds.drop('z_w_top')
         ds = ds.rename({'z_w_top': 'z_t'})
     if 'z_w_bot' in ds.dims:
+        ds = ds.drop('z_w_bot')
         ds = ds.rename({'z_w_bot': 'z_t'})
 
     # Force datetime
