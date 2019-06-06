@@ -1,5 +1,6 @@
 import datetime
 import glob
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -22,6 +23,7 @@ def _process_grid(grid):
 
 def _compute_kmax(budget_depth, z):
     """Compute the k-index of the maximum budget depth"""
+    # NOTE: Change this to other argmin() method.
     kmax = (z <= budget_depth).argmin() - 1
     kmax = kmax.values
     # This only occurs when the full depth is requested (or `budget_depth` is greater than the maximum POP depth`)
@@ -124,8 +126,8 @@ def _compute_vertical_advection(ds, grid, mask, kmax=None):
     if kmax is not None:
         # Need one level below max depth to compute divergence into bottom layer.
         ds = ds.isel(z_t=slice(0, kmax + 2))
-    ds = ds.where(mask)
     ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
+    ds = ds.where(mask)
     if kmax is not None:
         ds = _convert_to_tendency(ds, grid.vol, kmax=kmax + 1)
     else:
@@ -145,8 +147,8 @@ def _compute_vertical_mixing(ds, grid, mask, kmax=None):
     ds = ds[['DIA_IMPVF', 'KPP_SRC']]
     if kmax is not None:
         ds = ds.isel(z_t=slice(0, kmax + 1))
-    ds = ds.where(mask)
     ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
+    ds = ds.where(mask)
     # Only need to flip sign of DIA_IMPVF.
     ds['DIA_IMPVF'] = _convert_to_tendency(ds['DIA_IMPVF'], grid.area, sign=-1, kmax=kmax)
     ds['KPP_SRC'] = _convert_to_tendency(ds['KPP_SRC'], grid.vol, kmax=kmax)
@@ -168,27 +170,42 @@ def _compute_SMS(ds, grid, mask, kmax=None):
     if kmax is not None:
         ds = ds.isel(z_t=slice(0, kmax + 1))
     ds = ds.where(mask)
-    ds = _convert_to_tendency(ds, grid.vol, kmax=kmax).rename('sms').sum('z_t')
+    # Commonly output by POP as Jint_100m. So in those cases there won't be a
+    # depth-resolved dimension.
+    if 'z_t' in ds.dims:
+        ds = _convert_to_tendency(ds, grid.vol, kmax=kmax).rename('sms').sum('z_t')
+    else:
+        ds = _convert_to_tendency(ds, grid.area).rename('sms')
     ds = _convert_units(ds)
-    # SMS comes as monthly output. Need to resample to annual for comparison to the other tracer budget terms.
     ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     ds.attrs['long_name'] = 'source/sink'
     return ds.load()
 
 
-def _compute_surface_fluxes(ds, grid, mask):
-    """Computes surface fluxes of tracer."""
-    print('Computing surface fluxes...')
-    ds = ds[['FvICE', 'FvPER', 'STF']]
+def _compute_surface_flux(ds, grid, mask):
+    """Computes virtual fluxes of tracer."""
+    print('Computing surface flux...')
+    ds = ds['STF']
+    ds = ds.where(mask)
+    ds = _convert_to_tendency(ds, grid.area)
+    ds = _convert_units(ds)
+    ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
+    stf = ds.rename('stf')
+    stf.attrs['long_name'] = 'surface tracer flux'
+    return stf.load()
+
+
+def _compute_virtual_flux(ds, grid, mask):
+    """Computes virtual fluxes of tracer."""
+    print('Computing virtual fluxes...')
+    ds = ds[['FvICE', 'FvPER']]
     ds = ds.where(mask)
     ds = _convert_to_tendency(ds, grid.area)
     ds = _convert_units(ds)
     ds = ds.groupby('time.year').mean('time').rename({'year': 'time'})
     vf = (ds.FvICE + ds.FvPER).rename('vf')
-    stf = (ds.STF).rename('stf')
     vf.attrs['long_name'] = 'virtual flux'
-    stf.attrs['long_name'] = 'surface tracer flux'
-    return vf.load(), stf.load()
+    return vf.load()
 
 
 def _process_input_dataset(ds):
@@ -210,9 +227,13 @@ def _process_input_dataset(ds):
     if 'z_w_bot' in ds.dims:
         ds = ds.rename({'z_w_bot': 'z_t'})
 
+    # Force datetime
+    if not np.issubdtype(ds.time.dtype, np.datetime64):
+        raise TypeError('Please input a dataset with a time coordinate of type datetime.')
+
     # Force chunking.
     if not ds.chunks:
-        raise IOError('Please input a dataset with chunks.')
+        raise IOError('Please input a dataset with chunks (i.e., dask arrays).')
     return ds
 
 
@@ -273,12 +294,33 @@ def regional_tracer_budget(ds, grid, mask=None, mask_int=None, budget_depth=None
     vadv = _compute_vertical_advection(ds, grid, mask, kmax=kmax)
     lmix = _compute_lateral_mixing(ds, grid, mask, kmax=kmax)
     vmix = _compute_vertical_mixing(ds, grid, mask, kmax=kmax)
-    sms = _compute_SMS(ds, grid, mask, kmax=kmax)
-    vf, stf = _compute_surface_fluxes(ds, grid, mask)
+    reg_budget = xr.merge([ladv, vadv, lmix, vmix])
+    # Only compute if SMS is in the dataset.
+    if 'SMS' in ds:
+        sms = _compute_SMS(ds, grid, mask, kmax=kmax)
+        reg_budget = xr.merge([reg_budget, sms])
+    else:
+        warnings.warn('SMS is not in the input dataset and thus source/sink will not be computed.')
 
-    # Merge into dataset.
-    reg_budget = xr.merge([ladv, vadv, lmix, vmix, sms, vf, stf])
-    reg_budget.attrs['units'] = 'mol/yr'
+    # Only compute if STF is in the dataset.
+    if 'STF' in ds:
+        stf = _compute_surface_flux(ds, grid, mask)
+        reg_budget = xr.merge([reg_budget, stf])
+    else:
+        warnings.warn(
+            'STF is not in the input dataset and thus surface tracer fluxes will not be computed.'
+        )
+
+    # Only compute if FvICE and FvPER are in dataset.
+    if ('FvICE' in ds) and ('FvPER' in ds):
+        vf = _compute_virtual_flux(ds, grid, mask)
+        reg_budget = xr.merge([reg_budget, vf])
+    else:
+        warnings.warn(
+            'FvICE and FvPER are not in the input dataset and thus virtual fluxes will not be computed.'
+        )
+
     if sum_area:
         reg_budget = reg_budget.sum(['nlat', 'nlon'])
+    reg_budget.attrs['units'] = 'mol/yr'
     return reg_budget
