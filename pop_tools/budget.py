@@ -118,7 +118,7 @@ def _compute_lateral_advection(ds, grid, mask, kmax=None):
     ladv = (ladv_zonal + ladv_merid).rename('ladv')
     ladv = _convert_units(ladv)
     ladv.attrs['long_name'] = 'lateral advection'
-    return ladv.load()
+    return ladv
 
 
 def _compute_lateral_mixing(ds, grid, mask, kmax=None):
@@ -136,7 +136,7 @@ def _compute_lateral_mixing(ds, grid, mask, kmax=None):
     lmix = (lmix_merid + lmix_zonal + lmix_B).rename('lmix')
     lmix = _convert_units(lmix)
     lmix.attrs['long_name'] = 'lateral mixing'
-    return lmix.load()
+    return lmix
 
 
 def _compute_vertical_advection(ds, grid, mask, kmax=None):
@@ -152,7 +152,7 @@ def _compute_vertical_advection(ds, grid, mask, kmax=None):
     vadv = vadv.rename('vadv')
     vadv = _convert_units(vadv)
     vadv.attrs['long_name'] = 'vertical advection'
-    return vadv.load()
+    return vadv
 
 
 def _compute_vertical_mixing(ds, grid, mask, kmax=None):
@@ -170,7 +170,7 @@ def _compute_vertical_mixing(ds, grid, mask, kmax=None):
     vmix = (ds.KPP_SRC + diadiff).rename('vmix')
     vmix = _convert_units(vmix)
     vmix.attrs['long_name'] = 'vertical mixing'
-    return vmix.load()
+    return vmix
 
 
 def _compute_SMS(ds, grid, mask, kmax=None):
@@ -179,7 +179,7 @@ def _compute_SMS(ds, grid, mask, kmax=None):
     ds = _convert_to_tendency(ds, grid, kmax=kmax)
     ds = _convert_units(ds)
     ds.attrs['long_name'] = 'source/sink'
-    return ds.load()
+    return ds
 
 
 def _compute_surface_flux(ds, grid, mask):
@@ -189,7 +189,7 @@ def _compute_surface_flux(ds, grid, mask):
     ds = _convert_units(ds)
     stf = ds.rename({'STF': 'stf'})
     stf.attrs['long_name'] = 'surface tracer flux'
-    return stf.load()
+    return stf
 
 
 def _compute_virtual_flux(ds, grid, mask):
@@ -199,7 +199,7 @@ def _compute_virtual_flux(ds, grid, mask):
     ds = _convert_units(ds)
     vf = (ds.FvICE + ds.FvPER).rename('vf')
     vf.attrs['long_name'] = 'virtual flux'
-    return vf.load()
+    return vf
 
 
 def _process_input_dataset(ds):
