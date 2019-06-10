@@ -178,6 +178,7 @@ def _compute_SMS(ds, grid, mask, kmax=None):
     ds = _subset_slice_mask(ds, var_list=['SMS'], kmax=kmax, mask=mask)
     ds = _convert_to_tendency(ds, grid, kmax=kmax)
     ds = _convert_units(ds)
+    ds = ds.rename({'SMS': 'sms'})
     ds.attrs['long_name'] = 'source/sink'
     return ds
 
