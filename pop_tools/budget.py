@@ -193,7 +193,7 @@ def _compute_surface_flux(ds, grid, mask):
     ds = _subset_slice_mask(ds, var_list=['STF'], mask=mask)
     ds = _convert_to_tendency(ds, grid)
     ds = _convert_units(ds)
-    stf = ds.rename('stf')
+    stf = ds.rename({'STF': 'stf'})
     stf.attrs['long_name'] = 'surface tracer flux'
     return stf.load()
 
