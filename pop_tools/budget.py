@@ -111,7 +111,6 @@ def _compute_vertical_divergence(da):
 
 def _compute_lateral_advection(ds, grid, mask, kmax=None):
     """Compute lateral advection component of budget"""
-    print('Computing lateral advection...')
     ds = _subset_slice_mask(ds, var_list=['UE', 'VN'], kmax=kmax)
     ds = _convert_to_tendency(ds, grid, kmax=kmax)
     ladv_zonal = _compute_horizontal_divergence(ds.UE, mask, direction='zonal')
@@ -124,7 +123,6 @@ def _compute_lateral_advection(ds, grid, mask, kmax=None):
 
 def _compute_lateral_mixing(ds, grid, mask, kmax=None):
     """Compute lateral mixing component."""
-    print('Computing lateral mixing...')
     ds = _subset_slice_mask(ds, var_list=['HDIFN', 'HDIFE', 'HDIFB'], kmax=kmax)
 
     # Flip sign so that positive direction is upwards.
@@ -143,7 +141,6 @@ def _compute_lateral_mixing(ds, grid, mask, kmax=None):
 
 def _compute_vertical_advection(ds, grid, mask, kmax=None):
     """Compute vertical advection (WT)"""
-    print('Computing vertical advection...')
     # Need one layer below kmax to get divergence of vertical advection correct.
     ds = _subset_slice_mask(ds, var_list=['WT'], kmax=kmax + 1, mask=mask)
     ds = _convert_to_tendency(ds, grid, kmax=kmax + 1)
@@ -160,7 +157,6 @@ def _compute_vertical_advection(ds, grid, mask, kmax=None):
 
 def _compute_vertical_mixing(ds, grid, mask, kmax=None):
     """Compute contribution from vertical mixing."""
-    print('Computing vertical mixing...')
     ds = _subset_slice_mask(ds, var_list=['DIA_IMPVF', 'KPP_SRC'], kmax=kmax, mask=mask)
 
     # Only need to flip sign of DIA_IMPVF.
@@ -179,7 +175,6 @@ def _compute_vertical_mixing(ds, grid, mask, kmax=None):
 
 def _compute_SMS(ds, grid, mask, kmax=None):
     """Compute SMS term from biology."""
-    print('Computing source/sink...')
     ds = _subset_slice_mask(ds, var_list=['SMS'], kmax=kmax, mask=mask)
     ds = _convert_to_tendency(ds, grid, kmax=kmax)
     ds = _convert_units(ds)
@@ -189,7 +184,6 @@ def _compute_SMS(ds, grid, mask, kmax=None):
 
 def _compute_surface_flux(ds, grid, mask):
     """Computes virtual fluxes of tracer."""
-    print('Computing surface flux...')
     ds = _subset_slice_mask(ds, var_list=['STF'], mask=mask)
     ds = _convert_to_tendency(ds, grid)
     ds = _convert_units(ds)
@@ -200,7 +194,6 @@ def _compute_surface_flux(ds, grid, mask):
 
 def _compute_virtual_flux(ds, grid, mask):
     """Computes virtual fluxes of tracer."""
-    print('Computing virtual fluxes...')
     ds = _subset_slice_mask(ds, var_list=['FvICE', 'FvPER'], mask=mask)
     ds = _convert_to_tendency(ds, grid)
     ds = _convert_units(ds)
