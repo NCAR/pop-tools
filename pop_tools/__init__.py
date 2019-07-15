@@ -7,6 +7,7 @@ from .config import grid_defs
 from .eos import compute_pressure, eos
 from .fill import lateral_fill, lateral_fill_np_array
 from .grid import get_grid
+from .region_masks import list_region_masks, region_mask_3d
 
 try:
     __version__ = get_distribution(__name__).version
