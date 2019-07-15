@@ -19,6 +19,7 @@ else:
 
 INPUT_TEMPLATES = os.path.join(package_dir, 'input_templates')
 grid_def_file = os.path.join(package_dir, 'pop_grid_definitions.yaml')
+region_def_file = os.path.join(package_dir, 'region_mask_definitions.yaml')
 
 
 def gen_grid_defs(grid_def_file):

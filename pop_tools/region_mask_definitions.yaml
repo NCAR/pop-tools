@@ -1,0 +1,173 @@
+POP_gx1v6:
+  lat-range-basin:
+    Global:
+      - match:
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+    90S-44S:
+      - bounds:
+          TLAT: [-90., -44.]
+    Atl_44S-18S:
+      - bounds:
+          TLONG: [292., 20.]
+          TLAT: [-44., -18.]
+    Pac_44S-18S:
+      - bounds:
+          TLAT: [-44., -18.]
+          TLONG: [147., 292.]
+    Ind_44S-18S:
+      - bounds:
+          TLAT: [-44., -18.]
+          TLONG: [20., 147.]
+    Atl_18S-18N:
+      - bounds:
+          TLAT: [-18., 18.]
+        match:
+          REGION_MASK: [6]
+    Pac_18S-18N:
+      - bounds:
+          TLAT: [-18., 18.]
+        match:
+          REGION_MASK: [2]
+    Ind_18S-30N:
+      - bounds:
+          TLAT: [-18., 30.]
+        match:
+          REGION_MASK: [3]
+    Atl_18N-49N:
+      - bounds:
+          TLAT: [18., 49.]
+        match:
+          REGION_MASK: [6]
+    Pac_18N-49N:
+      - bounds:
+          TLAT: [18., 49.]
+        match:
+          REGION_MASK: [2]
+    Atl_49N-66N:
+      - bounds:
+          TLAT: [49., 66.]
+        match:
+          REGION_MASK: [6, 8, 9, 10, 11]
+    Pac_49N-66N:
+      - bounds:
+          TLAT: [49., 66.]
+        match:
+          REGION_MASK: [2]
+    Arc_66N-90N:
+      - bounds:
+          TLAT: [66., 90.]
+        match:
+          REGION_MASK: [6, 8, 9, 10, 11]
+
+  Pacific-Indian-Atlantic:
+    Global:
+      - match:
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+    Atlantic Ocean:
+      - match:
+          REGION_MASK: [6, 8, 9, 10, 11]
+      - match:
+          REGION_MASK: [1, 6]
+        bounds:
+          TLONG: [292., 20.]
+    Pacific Ocean:
+      - match:
+          REGION_MASK: [2]
+      - bounds:
+          TLONG: [147., 292.]
+        match:
+          REGION_MASK: [1, 2]
+    Indian Ocean:
+      - match:
+          REGION_MASK: [3, 4]
+      - bounds:
+          TLONG: [20., 147.]
+        match:
+          REGION_MASK: [1]
+
+POP_gx1v7:
+  lat-range-basin:
+    Global:
+      - match:
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+    90S-44S:
+      - bounds:
+          TLAT: [-90., -44.]
+    Atl_44S-18S:
+      - bounds:
+          TLONG: [292., 20.]
+          TLAT: [-44., -18.]
+    Pac_44S-18S:
+      - bounds:
+          TLAT: [-44., -18.]
+          TLONG: [147., 292.]
+    Ind_44S-18S:
+      - bounds:
+          TLAT: [-44., -18.]
+          TLONG: [20., 147.]
+    Atl_18S-18N:
+      - bounds:
+          TLAT: [-18., 18.]
+        match:
+          REGION_MASK: [6]
+    Pac_18S-18N:
+      - bounds:
+          TLAT: [-18., 18.]
+        match:
+          REGION_MASK: [2]
+    Ind_18S-30N:
+      - bounds:
+          TLAT: [-18., 30.]
+        match:
+          REGION_MASK: [3, 4]
+    Atl_18N-49N:
+      - bounds:
+          TLAT: [18., 49.]
+        match:
+          REGION_MASK: [6]
+    Pac_18N-49N:
+      - bounds:
+          TLAT: [18., 49.]
+        match:
+          REGION_MASK: [2]
+    Atl_49N-66N:
+      - bounds:
+          TLAT: [49., 66.]
+        match:
+          REGION_MASK: [6, 8, 9, 10, 11]
+    Pac_49N-66N:
+      - bounds:
+          TLAT: [49., 66.]
+        match:
+          REGION_MASK: [2]
+    Arc_66N-90N:
+      - bounds:
+          TLAT: [66., 90.]
+        match:
+          REGION_MASK: [6, 8, 9, 10, 11]
+
+  Pacific-Indian-Atlantic:
+    Global:
+      - match:
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+    Atlantic Ocean:
+      - match:
+          REGION_MASK: [6, 8, 9, 10, 11]
+      - match:
+          REGION_MASK: [1, 6]
+        bounds:
+          TLONG: [292., 20.]
+    Pacific Ocean:
+      - match:
+          REGION_MASK: [2]
+      - bounds:
+          TLONG: [147., 292.]
+        match:
+          REGION_MASK: [1, 2]
+    Indian Ocean:
+      - match:
+          REGION_MASK: [3, 4]
+      - bounds:
+          TLONG: [20., 147.]
+        match:
+          REGION_MASK: [1]

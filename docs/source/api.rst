@@ -20,6 +20,14 @@ Equation of State
    eos
    compute_pressure
 
+Region masks
+~~~~~~~~~~~~
+
+.. autosummary::
+   region_mask_3d
+   list_region_masks
+
+
 Utilities
 ~~~~~~~~~
 
@@ -34,5 +42,9 @@ Utilities
 .. autofunction:: eos
 
 .. autofunction:: compute_pressure
+
+.. autofunction:: region_mask_3d
+
+.. autofunction:: list_region_masks
 
 .. autofunction:: lateral_fill

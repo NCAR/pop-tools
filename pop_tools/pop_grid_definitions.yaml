@@ -15,6 +15,20 @@ POP_gx1v7:
     topography_fname: '{{INPUTDATA}}/ocn/pop/gx1v7/grid/topography_20161215.ieeei4'
     region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx1v7/grid/region_mask_20151008.ieeei4'
     type: dipole
+    region_mask_regions:
+      Black Sea: -13
+      Baltic Sea: -12
+      Red Sea: -5
+      Southern Ocean: 1
+      Pacific Ocean: 2
+      Indian Ocean: 3
+      Persian Gulf: 4
+      Atlantic Ocean: 6
+      Mediterranean Sea: 7
+      Lab. Sea & Baffin Bay: 8
+      GIN Seas: 9
+      Arctic Ocean: 10
+      Hudson Bay: 11
 
 POP_gx1v6:
     lateral_dims: [384, 320]
@@ -24,6 +38,21 @@ POP_gx1v6:
     topography_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/topography_20090204.ieeei4'
     region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/region_mask_20090205.ieeei4'
     type: dipole
+    region_mask_regions:
+      Caspian Sea: -14
+      Black Sea: -13
+      Baltic Sea: -12
+      Red Sea: -5
+      Southern Ocean: 1
+      Pacific Ocean: 2
+      Indian Ocean: 3
+      Persian Gulf: 4
+      Atlantic Ocean: 6
+      Mediterranean Sea: 7
+      Lab. Sea & Baffin Bay: 8
+      GIN Seas: 9
+      Arctic Ocean: 10
+      Hudson Bay: 11
 
 POP_tx0.1v3:
     lateral_dims: [2400, 3600]
