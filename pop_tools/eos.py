@@ -100,10 +100,6 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         salt, temp, pressure = xr.broadcast(salt, temp, pressure)
 
         if return_coefs:
-
-            # RHO = xr.full_like(salt, fill_value=np.nan)
-            # dRHOdS = xr.full_like(salt, fill_value=np.nan)
-            # dRHOdT = xr.full_like(salt, fill_value=np.nan)
             RHO, dRHOdS, dRHOdT = _compute_eos_coeffs(salt, temp, pressure)
 
             dRHOdS.name = 'dRHOdS'
