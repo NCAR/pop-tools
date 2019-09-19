@@ -37,6 +37,8 @@ def test_eos_xarray_2():
     )
     rho, drhodS, drhodT = pop_tools.eos(ds.SALT, ds.TEMP, depth=ds.z_t * 1e-2, return_coefs=True)
     assert isinstance(rho, xr.DataArray)
+    assert isinstance(drhodS, xr.DataArray)
+    assert isinstance(drhodT, xr.DataArray)
 
 
 def test_eos_ds_dask():
@@ -48,3 +50,16 @@ def test_eos_ds_dask():
     )
     rho = pop_tools.eos(ds.SALT, ds.TEMP, depth=ds.z_t * 1e-2)
     assert isinstance(rho, xr.DataArray)
+
+
+def test_eos_ds_dask_2():
+    ds = xr.open_dataset(
+        f'{testdata_dir}/cesm_pop_monthly.T62_g17.nc',
+        decode_times=False,
+        decode_coords=False,
+        chunks={'z_t': 20},
+    )
+    rho, drhodS, drhodT = pop_tools.eos(ds.SALT, ds.TEMP, depth=ds.z_t * 1e-2, return_coefs=True)
+    assert isinstance(rho, xr.DataArray)
+    assert isinstance(drhodS, xr.DataArray)
+    assert isinstance(drhodT, xr.DataArray)

@@ -101,16 +101,10 @@ def eos(salt, temp, return_coefs=False, **kwargs):
 
         if return_coefs:
 
-            if isinstance(salt.data, dask.array.Array):
-                raise NotImplementedError('cannot return coefficient with dask')
-
-            else:
-                RHO = xr.full_like(salt, fill_value=np.nan)
-                dRHOdS = xr.full_like(salt, fill_value=np.nan)
-                dRHOdT = xr.full_like(salt, fill_value=np.nan)
-                RHO[:], dRHOdS[:], dRHOdT[:] = _compute_eos_coeffs(
-                    salt.data, temp.data, pressure.data
-                )
+            # RHO = xr.full_like(salt, fill_value=np.nan)
+            # dRHOdS = xr.full_like(salt, fill_value=np.nan)
+            # dRHOdT = xr.full_like(salt, fill_value=np.nan)
+            RHO, dRHOdS, dRHOdT = _compute_eos_coeffs(salt, temp, pressure)
 
             dRHOdS.name = 'dRHOdS'
             dRHOdS.attrs['units'] = 'kg/m^3/degC'
@@ -233,7 +227,7 @@ def _compute_eos(salt, temp, pressure):
     return WORK1 * DENOMK
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def _compute_eos_coeffs(salt, temp, pressure):
     # MWJF EOS coefficients
     # *** these constants will be used to construct the numerator
