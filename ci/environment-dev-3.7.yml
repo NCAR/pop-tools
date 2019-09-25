@@ -6,7 +6,6 @@ dependencies:
   - black
   - bottleneck
   - codecov
-  - dask
   - flake8
   - isort
   - jupyterlab
@@ -15,19 +14,17 @@ dependencies:
   - nbsphinx
   - netcdf4
   - numba
-  - numpy
   - numpydoc
   - pip
   - pytest
   - pytest-cov
+  - pytest-lazy-fixture
+  - pytest-xdist
   - python=3.7
   - recommonmark
   - scipy
   - sphinx_rtd_theme=0.4.2
-  - sphinx=1.8.2
-  - xarray>=0.12
-  - zarr
-  - docrep
-  - pytest-lazy-fixture
-  - pytest-xdist
   - sphinx-copybutton
+  - sphinx=1.8.2
+  - xgcm
+  - zarr
