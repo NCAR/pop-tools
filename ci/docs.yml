@@ -2,6 +2,7 @@ name: pop-tools-dev
 channels:
   - conda-forge
 dependencies:
+  - notebook
   - nbsphinx
   - netcdf4
   - numba=0.45.1
