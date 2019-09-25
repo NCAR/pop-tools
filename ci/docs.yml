@@ -2,20 +2,17 @@ name: pop-tools-dev
 channels:
   - conda-forge
 dependencies:
-  - jupyterlab
   - nbsphinx
-  - numpy
-  - numpydoc
+  - numpy=1.17.0
+  - numpydoc=0.8.0
   - pip
   - python=3.7
   - recommonmark
-  - sphinx_rtd_theme
-  - sphinx>=1.6
+  - sphinx_rtd_theme=0.4.2
+  - sphinx=1.8.2
+  - sphinx-gallery=0.2.0
   - xarray
   - netcdf4
-  - numba
-  - scipy
-  - jinja2
-  - dask
-  - pip:
-    - sphinx_copybutton
+  - numba=0.45.1
+  - scipy=1.3.1
+  - sphinx-copybutton=0.2.5

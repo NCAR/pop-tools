@@ -7,7 +7,6 @@ dependencies:
   - bottleneck
   - codecov
   - dask
-  - distributed
   - flake8
   - isort
   - jupyterlab
@@ -24,12 +23,11 @@ dependencies:
   - python=3.7
   - recommonmark
   - scipy
-  - sphinx_rtd_theme
-  - sphinx>=1.6
+  - sphinx_rtd_theme=0.4.2
+  - sphinx=1.8.2
   - xarray>=0.12
   - zarr
-  - pip:
-    - docrep
-    - pytest-lazy-fixture
-    - pytest-xdist
-    - sphinx_copybutton
+  - docrep
+  - pytest-lazy-fixture
+  - pytest-xdist
+  - sphinx-copybutton
