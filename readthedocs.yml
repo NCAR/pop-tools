@@ -1,3 +1,5 @@
+build:
+  image: latest
 conda:
   file: ci/docs.yml
 python:
