@@ -35,7 +35,8 @@ def _dims_from_grid_loc(grid_loc):
     y_loc_key = int(grid_loc[2])
     z_loc_key = int(grid_loc[3])
 
-    x_loc = {1: 'nlon_t', 2: 'nlon_u'}[x_loc_key]
+    x_loc = {1: 'nlon_t', 2: 'nlon_u', 3: 'nlon_u'}[x_loc_key]
+    y_loc = {1: 'nlat_t', 2: 'nlat_u', 3: 'nlat_t'}[y_loc_key]
     y_loc = {1: 'nlat_t', 2: 'nlat_u'}[y_loc_key]
     z_loc = {0: 'surface', 1: 'z_t', 2: 'z_w', 3: 'z_w_bot', 4: 'z_t_150m'}[z_loc_key]
 
