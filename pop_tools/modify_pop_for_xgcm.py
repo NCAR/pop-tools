@@ -71,7 +71,8 @@ def _label_coord_grid_locs(ds):
     }
     ds_new = ds.copy()
     for vname, grid_loc in grid_locs.items():
-        ds_new[vname].attrs['grid_loc'] = grid_loc
+        if vname in ds.variables:
+            ds_new[vname].attrs['grid_loc'] = grid_loc
     return ds_new
 
 
