@@ -53,6 +53,8 @@ def _label_coord_grid_locs(ds):
         'DXU': '2220',
         'DYT': '2110',
         'DYU': '2220',
+        'DZU': '3221',
+        'DZT': '3111',
         'HT': '2110',
         'HU': '2220',
         'HTE': '2210',
