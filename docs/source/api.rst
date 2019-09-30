@@ -35,6 +35,12 @@ Utilities
    lateral_fill
 
 
+xgcm utilities
+~~~~~~~~~~~~~~
+
+.. autosummary::
+   get_xgcm_grid
+
 .. currentmodule:: pop_tools
 
 .. autofunction:: get_grid
@@ -48,3 +54,5 @@ Utilities
 .. autofunction:: list_region_masks
 
 .. autofunction:: lateral_fill
+
+.. autofunction:: get_xgcm_grid

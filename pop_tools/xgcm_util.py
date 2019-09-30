@@ -96,3 +96,63 @@ def relabel_pop_dims(ds):
                 dims = new_spatial_dims
             ds_new[vname] = xr.Variable(dims, da.data, da.attrs, da.encoding, fastpath=True)
     return ds_new
+
+
+def get_xgcm_grid(ds):
+    """Return an xgcm Grid object
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+        An xarray Dataset
+
+    Returns
+    -------
+    grid : xgcm.Grid
+        An xgcm Grid object
+
+    Examples
+    --------
+    >>> from pop_tools import get_xgcm_grid
+    >>> import xarray as xr
+    >>> ds = xr.open_dataset("./tests/data/cesm_pop_monthly.T62_g17.nc")
+    >>> ds
+    <xarray.Dataset>
+    Dimensions:       (d2: 2, lat_aux_grid: 395, nlat: 384, nlon: 320, time: 1, z_t: 60)
+    Coordinates:
+        TLAT          (nlat, nlon) float64 ...
+        TLONG         (nlat, nlon) float64 ...
+        ULAT          (nlat, nlon) float64 ...
+        ULONG         (nlat, nlon) float64 ...
+    * lat_aux_grid  (lat_aux_grid) float32 -79.48815 -78.952896 ... 89.47441 90.0
+    * time          (time) object 0173-01-01 00:00:00
+    * z_t           (z_t) float32 500.0 1500.0 2500.0 ... 512502.8 537500.0
+    Dimensions without coordinates: d2, nlat, nlon
+    Data variables:
+        SALT          (time, z_t, nlat, nlon) float32 ...
+        TEMP          (time, z_t, nlat, nlon) float32 ...
+        UVEL          (time, z_t, nlat, nlon) float32 ...
+        VVEL          (time, z_t, nlat, nlon) float32 ...
+        time_bound    (time, d2) object ...
+    Attributes:
+        title:             g.e21.G1850ECOIAF.T62_g17.004
+        history:           Sun May 26 14:13:02 2019: ncks -4 -L 9 cesm_pop_monthl...
+        Conventions:       CF-1.0; http://www.cgd.ucar.edu/cms/eaton/netcdf/CF-cu...
+        time_period_freq:  month_1
+        model_doi_url:     https://doi.org/10.5065/D67H1H0V
+        contents:          Diagnostic and Prognostic Variables
+        source:            CCSM POP2, the CCSM Ocean Component
+        revision:          $Id: tavg.F90 90507 2019-01-18 20:54:19Z altuntas@ucar...
+        calendar:          All years have exactly  365 days.
+        start_time:        This dataset was created on 2019-05-26 at 11:20:07.5
+        cell_methods:      cell_methods = time: mean ==> the variable values are ...
+        NCO:               netCDF Operators version 4.7.4 (http://nco.sf.net)
+    >>> grid = get_xgcm_grid(ds)
+    >>> grid
+    <xgcm.Grid>
+
+    """
+    import xgcm
+
+    grid = xgcm.Grid(ds)
+    return grid
