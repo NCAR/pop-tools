@@ -31,3 +31,5 @@ dependencies:
   - pytest-lazy-fixture
   - pytest-xdist
   - sphinx-copybutton
+  - pip:
+    - git+https://github.com/NCAR/aletheia-data.git#egg=aletheia-data

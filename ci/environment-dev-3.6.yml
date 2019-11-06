@@ -21,3 +21,5 @@ dependencies:
   - docrep
   - pytest-lazy-fixture
   - pytest-xdist
+  - pip:
+      - git+https://github.com/NCAR/aletheia-data.git#egg=aletheia-data
