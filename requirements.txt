@@ -4,3 +4,4 @@ numba
 pyyaml
 xarray
 dask
+-e git+https://github.com/NCAR/aletheia-data.git#egg=aletheia-data
