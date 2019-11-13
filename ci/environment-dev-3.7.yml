@@ -32,4 +32,4 @@ dependencies:
   - pytest-xdist
   - sphinx-copybutton
   - pip:
-    - git+https://github.com/NCAR/aletheia-data.git#egg=aletheia-data
+    - git+https://github.com/andersy005/pooch.git@ftp-downloader#egg=pooch

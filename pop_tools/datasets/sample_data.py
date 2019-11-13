@@ -4,9 +4,9 @@ Functions to load sample data
 
 import os
 
-import aletheia_data
+import pooch
 
-DATASETS = aletheia_data.create(
+DATASETS = pooch.create(
     path=['~', '.aletheia', 'data'],
     version_dev='master',
     base_url='ftp://ftp.cgd.ucar.edu/archive/aletheia-data/cesm-data/ocn/',

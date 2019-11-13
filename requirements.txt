@@ -4,4 +4,4 @@ numba
 pyyaml
 xarray
 dask
-aletheia-data
+pooch
