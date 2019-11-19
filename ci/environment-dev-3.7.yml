@@ -32,4 +32,4 @@ dependencies:
   - pytest-xdist
   - sphinx-copybutton
   - pip:
-    - git+https://github.com/andersy005/pooch.git@ftp-downloader#egg=pooch
+    - git+https://github.com/fatiando/pooch.git
