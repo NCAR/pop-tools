@@ -48,7 +48,7 @@ extensions = [
 
 # Enable notebook execution
 # https://nbsphinx.readthedocs.io/en/0.4.2/never-execute.html
-nbsphinx_execute = 'always'
+nbsphinx_execute = 'auto'
 # Allow errors in all notebooks by
 nbsphinx_allow_errors = True
 
@@ -57,7 +57,6 @@ nbsphinx_timeout = -1
 
 nbsphinx_kernel_name = 'python3'
 
-exclude_patterns = ['_build', 'examples/.ipynb_checkpoints/', 'Thumbs.db', '.DS_Store']
 
 extlinks = {
     'issue': ('https://github.com/NCAR/pop-tools/issues/%s', 'GH#'),
@@ -102,7 +101,8 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+# exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+exclude_patterns = ['_build', '**.ipynb_checkpoints', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
