@@ -55,6 +55,8 @@ nbsphinx_allow_errors = True
 # Disable cell timeout
 nbsphinx_timeout = -1
 
+nbsphinx_kernel_name = 'python3'
+
 exclude_patterns = ['_build', 'examples/.ipynb_checkpoints/', 'Thumbs.db', '.DS_Store']
 
 extlinks = {
