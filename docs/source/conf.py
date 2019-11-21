@@ -47,6 +47,12 @@ extensions = [
     'nbsphinx',
 ]
 
+# Enable notebook execution
+# https://nbsphinx.readthedocs.io/en/0.4.2/never-execute.html
+nbsphinx_execute = 'always'
+# Allow errors in all notebooks by
+nbsphinx_allow_errors = True
+
 extlinks = {
     'issue': ('https://github.com/NCAR/pop-tools/issues/%s', 'GH#'),
     'pr': ('https://github.com/NCAR/pop-tools/pull/%s', 'GH#'),
