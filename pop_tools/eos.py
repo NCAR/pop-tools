@@ -6,7 +6,8 @@ from numba import jit
 
 @jit(nopython=True)
 def compute_pressure(depth):
-    """Convert depth in meters to pressure in bars.
+    """
+    Convert depth in meters to pressure in bars.
 
     Parameters
     ----------
@@ -24,39 +25,40 @@ def compute_pressure(depth):
 
 
 def eos(salt, temp, return_coefs=False, **kwargs):
-    """Compute density as a function of salinity, temperature, and
-       depth (or pressure).
+    """
+    Compute density as a function of salinity, temperature, and
+    depth (or pressure).
 
-     McDougall, T.J., D.R. Jackett, D.G. Wright, and R. Feistel, 2003:
-     Accurate and Computationally Efficient Algorithms for Potential
-     Temperature and Density of Seawater. J. Atmos. Oceanic Technol., 20,
-     730–741, _`https://doi.org/10.1175/1520-0426(2003)20<730:AACEAF>2.0.CO;2`.
+    McDougall, T.J., D.R. Jackett, D.G. Wright, and R. Feistel, 2003:
+    Accurate and Computationally Efficient Algorithms for Potential
+    Temperature and Density of Seawater. J. Atmos. Oceanic Technol., 20,
+    730–741, _`https://doi.org/10.1175/1520-0426(2003)20<730:AACEAF>2.0.CO;2`.
 
-     test value:
-       rho = 1033.213387 kg/m^3;
-       S = 35.0 PSU, theta = 20.0 C, pressure = 2000.0 dbars
+    test value:
+        rho = 1033.213387 kg/m^3;
+        S = 35.0 PSU, theta = 20.0 C, pressure = 2000.0 dbars
 
-      Parameters
-      ----------
-      salt : float
-         salinity, psu
-      temp : float
+    Parameters
+    ----------
+    salt : float
+        salinity, psu
+    temp : float
         potential temperature, degree C
-      return_coefs : boolean, optional [default=False]
+    return_coefs : boolean, optional [default=False]
         Logical, if true function returns 2 additional arguments:
         dRHOdS and dRHOdT
-      depth : float, optional
+    depth : float, optional
         depth in meters, if not provided, pressure must be provided.
-      pressure : float, optional
+    pressure : float, optional
         depth in dbar
 
-      Returns
-      -------
-      rho : float
+    Returns
+    -------
+    rho : float
         density kg/m^3
-      dRHOdS : float, optional
+    dRHOdS : float, optional
         Derivative of rho with respect to salinity.
-      dRHOdT : float, optional
+    dRHOdT : float, optional
         Derivative of rho with respect to temperature.
     """
 

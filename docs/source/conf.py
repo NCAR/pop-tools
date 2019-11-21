@@ -42,8 +42,7 @@ extensions = [
     'numpydoc',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
-    # "sphinx_copybutton",
-    # "recommonmark",
+    'sphinx.ext.mathjax',  # for math equations
     'nbsphinx',
 ]
 
@@ -53,6 +52,11 @@ nbsphinx_execute = 'always'
 # Allow errors in all notebooks by
 nbsphinx_allow_errors = True
 
+# Disable cell timeout
+nbsphinx_timeout = -1
+
+exclude_patterns = ['_build', 'examples/.ipynb_checkpoints/', 'Thumbs.db', '.DS_Store']
+
 extlinks = {
     'issue': ('https://github.com/NCAR/pop-tools/issues/%s', 'GH#'),
     'pr': ('https://github.com/NCAR/pop-tools/pull/%s', 'GH#'),
@@ -60,6 +64,7 @@ extlinks = {
 numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+html_static_path = ['../_build/html/_static']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -74,7 +79,7 @@ master_doc = 'index'
 current_year = datetime.datetime.now().year
 project = u'pop-tools'
 copyright = u'2018-{}, University Corporation for Atmospheric Research'.format(current_year)
-author = u'Earth System Informatics Team'
+author = u'The NCAR Experimental Development (Xdev) Team'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
