@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pkg_resources
@@ -13,8 +14,20 @@ except ImportError:
     tqdm = None
 
 
+INPUTDATA_DIR = ['~', 'pop_tools', 'inputdata', 'ocn', 'pop']
+
+# On Cheyenne/Casper and/or CGD machines, use local inputdata directory
+# See: https://github.com/NCAR/pop-tools/issues/24#issue-523701065
+CESMDATAROOT = os.environ.get('CESMDATAROOT', None)
+
+if CESMDATAROOT:
+    DATA_DIR = Path(CESMDATAROOT) / 'inputdata/ocn/pop'
+    if DATA_DIR.exists():
+        INPUTDATA_DIR = DATA_DIR
+
+
 INPUTDATA = pooch.create(
-    path=['~', 'pop_tools', 'inputdata', 'ocn', 'pop'],
+    path=INPUTDATA_DIR,
     version_dev='master',
     base_url='https://svn-ccsm-inputdata.cgd.ucar.edu/trunk/inputdata/ocn/pop/',
 )
