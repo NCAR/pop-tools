@@ -31,5 +31,4 @@ dependencies:
   - pytest-lazy-fixture
   - pytest-xdist
   - sphinx-copybutton
-  - pip:
-    - git+https://github.com/fatiando/pooch.git
+  - pooch
