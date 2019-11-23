@@ -6,6 +6,7 @@ workflows:
     jobs:
       - "python-3.6"
       - "python-3.7"
+      - "python-3.8"
       - "docs-build"
       - "linting"
 
@@ -41,6 +42,13 @@ jobs:
     <<: *default-job
     environment:
       PYTHON: "3.7"
+      ENV_NAME: "pop-tools-dev"
+      TEST_SCRIPT: "run-checks.sh"
+
+  "python-3.8":
+    <<: *default-job
+    environment:
+      PYTHON: "3.8"
       ENV_NAME: "pop-tools-dev"
       TEST_SCRIPT: "run-checks.sh"
 
