@@ -26,12 +26,12 @@ jobs:
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA/bin/conda create -n pop-tools-dev -c conda-forge python=${{ matrix.python-version }} --quiet
+          $CONDA/bin/conda create -n pop-tools-dev -c conda-forge python=${{ matrix.python-version }} xarray dask --quiet
           $CONDA/bin/conda env update -f ./ci/environment.yml --quiet
-          source $CONDA/bin/activate pop-toools-dev
+          source $CONDA/bin/activate pop-tools-dev
           $CONDA_PREFIX/bin/python -m pip install . --quiet
           $CONDA/bin/conda list
       - name: Run tests
         run: |
-          source $CONDA/bin/activate pop-toools-dev
-          $CONDA_PREFIX/bin/pytest --junitxml=test-reports/junit.xml --cov=./ --verbose
+          source $CONDA/bin/activate pop-tools-dev
+          $CONDA_PREFIX/bin/pytest -n 4 --junitxml=test-reports/junit.xml --cov=./ --verbose
