@@ -17,3 +17,8 @@ dependencies:
   - scipy
   - xgcm
   - zarr
+  - docrep
+  - pytest-lazy-fixture
+  - pytest-xdist
+  - pooch
+  - watermark

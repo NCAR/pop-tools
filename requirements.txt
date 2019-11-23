@@ -1,4 +1,7 @@
-jinja2
+numpy
 numba
 pyyaml
+xarray
+dask
+pooch
 xgcm

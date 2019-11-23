@@ -1,19 +1,19 @@
 POP_gx3v7:
     lateral_dims: [116, 100]
     vertical_dims: 60
-    vert_grid_file: '{{INPUT_TEMPLATES}}/gx3v7_vert_grid'
-    horiz_grid_fname: '{{INPUTDATA}}/ocn/pop/gx3v7/grid/horiz_grid_20030806.ieeer8'
-    topography_fname: '{{INPUTDATA}}/ocn/pop/gx3v7/grid/topography_20100105.ieeei4'
-    region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx3v7/grid/region_mask_20090831.ieeei4'
+    vert_grid_file: 'gx3v7_vert_grid'
+    horiz_grid_fname: 'inputdata/ocn/pop/gx3v7/grid/horiz_grid_20030806.ieeer8'
+    topography_fname: 'inputdata/ocn/pop/gx3v7/grid/topography_20100105.ieeei4'
+    region_mask_fname: 'inputdata/ocn/pop/gx3v7/grid/region_mask_20090831.ieeei4'
     type: dipole
 
 POP_gx1v7:
     lateral_dims: [384, 320]
     vertical_dims: 60
-    vert_grid_file: '{{INPUT_TEMPLATES}}/gx1v7_vert_grid'
-    horiz_grid_fname: '{{INPUTDATA}}/ocn/pop/gx1v7/grid/horiz_grid_20010402.ieeer8'
-    topography_fname: '{{INPUTDATA}}/ocn/pop/gx1v7/grid/topography_20161215.ieeei4'
-    region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx1v7/grid/region_mask_20151008.ieeei4'
+    vert_grid_file: 'gx1v7_vert_grid'
+    horiz_grid_fname: 'inputdata/ocn/pop/gx1v7/grid/horiz_grid_20010402.ieeer8'
+    topography_fname: 'inputdata/ocn/pop/gx1v7/grid/topography_20161215.ieeei4'
+    region_mask_fname: 'inputdata/ocn/pop/gx1v7/grid/region_mask_20151008.ieeei4'
     type: dipole
     region_mask_regions:
       Black Sea: -13
@@ -33,10 +33,10 @@ POP_gx1v7:
 POP_gx1v6:
     lateral_dims: [384, 320]
     vertical_dims: 60
-    vert_grid_file: '{{INPUT_TEMPLATES}}/gx1v7_vert_grid'
-    horiz_grid_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/horiz_grid_20010402.ieeer8'
-    topography_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/topography_20090204.ieeei4'
-    region_mask_fname: '{{INPUTDATA}}/ocn/pop/gx1v6/grid/region_mask_20090205.ieeei4'
+    vert_grid_file: 'gx1v7_vert_grid'
+    horiz_grid_fname: 'inputdata/ocn/pop/gx1v6/grid/horiz_grid_20010402.ieeer8'
+    topography_fname: 'inputdata/ocn/pop/gx1v6/grid/topography_20090204.ieeei4'
+    region_mask_fname: 'inputdata/ocn/pop/gx1v6/grid/region_mask_20090205.ieeei4'
     type: dipole
     region_mask_regions:
       Caspian Sea: -14
@@ -57,17 +57,17 @@ POP_gx1v6:
 POP_tx0.1v3:
     lateral_dims: [2400, 3600]
     vertical_dims: 62
-    vert_grid_file: '{{INPUT_TEMPLATES}}/tx0.1v3_vert_grid'
-    horiz_grid_fname: '{{INPUTDATA}}/ocn/pop/tx0.1v3/grid/horiz_grid_200709.ieeer8'
-    topography_fname: '{{INPUTDATA}}/ocn/pop/tx0.1v3/grid/topography_20170718.ieeei4'
-    region_mask_fname: '{{INPUTDATA}}/ocn/pop/tx0.1v3/grid/region_mask_20170718.ieeei4'
+    vert_grid_file: 'tx0.1v3_vert_grid'
+    horiz_grid_fname: 'inputdata/ocn/pop/tx0.1v3/grid/horiz_grid_200709.ieeer8'
+    topography_fname: 'inputdata/ocn/pop/tx0.1v3/grid/topography_20170718.ieeei4'
+    region_mask_fname: 'inputdata/ocn/pop/tx0.1v3/grid/region_mask_20170718.ieeei4'
     type: tripole
 
 POP_tx0.1v2:
     lateral_dims: [2400, 3600]
     vertical_dims: 62
-    vert_grid_file: '{{INPUT_TEMPLATES}}/tx0.1v3_vert_grid'
-    horiz_grid_fname: '{{INPUTDATA}}/ocn/pop/tx0.1v2/grid/horiz_grid_200709.ieeer8'
-    topography_fname: '{{INPUTDATA}}/ocn/pop/tx0.1v2/grid/topography_km62_20171129.ieeei4'
-    region_mask_fname: '{{INPUTDATA}}/ocn/pop/tx0.1v2/grid/region_mask_20080702.ieeei4'
+    vert_grid_file: 'tx0.1v3_vert_grid'
+    horiz_grid_fname: 'inputdata/ocn/pop/tx0.1v2/grid/horiz_grid_200709.ieeer8'
+    topography_fname: 'inputdata/ocn/pop/tx0.1v2/grid/topography_km62_20171129.ieeei4'
+    region_mask_fname: 'inputdata/ocn/pop/tx0.1v2/grid/region_mask_20080702.ieeei4'
     type: tripole

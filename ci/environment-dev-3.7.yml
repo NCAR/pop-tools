@@ -28,3 +28,10 @@ dependencies:
   - sphinx=1.8.2
   - xgcm
   - zarr
+  - docrep
+  - pytest-lazy-fixture
+  - pytest-xdist
+  - sphinx-copybutton
+  - pooch
+  - watermark
+  - xgcm
