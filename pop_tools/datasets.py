@@ -8,7 +8,7 @@ import pkg_resources
 import pooch
 
 DATASETS = pooch.create(
-    path=['~', 'pop_tools', 'data'],
+    path=['~', '.pop_tools', 'data'],
     version_dev='master',
     base_url='ftp://ftp.cgd.ucar.edu/archive/aletheia-data/cesm-data/ocn/',
 )
