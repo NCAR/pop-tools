@@ -1,8 +1,45 @@
+import os
+from pathlib import Path
+
 import numpy as np
+import pkg_resources
+import pooch
 import xarray as xr
+import yaml
 from numba import jit, prange
 
-from .config import grid_defs
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = None
+
+
+INPUTDATA_DIR = ['~', '.pop_tools']
+
+# On Cheyenne/Casper and/or CGD machines, use local inputdata directory
+# See: https://github.com/NCAR/pop-tools/issues/24#issue-523701065
+
+INPUTDATA = pooch.create(
+    # This is still the default in case the environment variable isn't defined
+    path=INPUTDATA_DIR,
+    version_dev='master',
+    base_url='https://svn-ccsm-inputdata.cgd.ucar.edu/trunk/',
+    # The name of the environment variable that can overwrite the path argument
+    env='CESMDATAROOT',
+)
+
+INPUTDATA.load_registry(pkg_resources.resource_stream('pop_tools', 'inputdata_registry.txt'))
+
+if tqdm is not None:
+    downloader = pooch.HTTPDownloader(progressbar=True, verify=False, allow_redirects=True)
+else:
+    downloader = pooch.HTTPDownloader(verify=False, allow_redirects=True)
+
+grid_def_file = pkg_resources.resource_filename('pop_tools', 'pop_grid_definitions.yaml')
+input_templates_dir = pkg_resources.resource_filename('pop_tools', 'input_templates')
+
+with open(grid_def_file) as f:
+    grid_defs = yaml.safe_load(f)
 
 
 def get_grid(grid_name, scrip=False):
@@ -36,7 +73,8 @@ def get_grid(grid_name, scrip=False):
     nlon = grid_attrs['lateral_dims'][1]
 
     # read horizontal grid
-    grid_file_data = np.fromfile(grid_attrs['horiz_grid_fname'], dtype='>f8', count=-1)
+    horiz_grid_fname = INPUTDATA.fetch(grid_attrs['horiz_grid_fname'], downloader=downloader)
+    grid_file_data = np.fromfile(horiz_grid_fname, dtype='>f8', count=-1)
     grid_file_data = grid_file_data.reshape((7, nlat, nlon))
 
     ULAT = grid_file_data[0, :, :].astype(np.float)
@@ -61,7 +99,8 @@ def get_grid(grid_name, scrip=False):
     TAREA = DXT * DYT
 
     # vertical grid
-    tmp = np.loadtxt(grid_attrs['vert_grid_file'])
+    vert_grid_fname = os.path.join(input_templates_dir, grid_attrs['vert_grid_file'])
+    tmp = np.loadtxt(vert_grid_fname)
     dz = tmp[:, 0]
     depth_edges = np.concatenate(([0.0], np.cumsum(dz)))
     z_w = depth_edges[0:-1]
@@ -69,7 +108,8 @@ def get_grid(grid_name, scrip=False):
     z_t = depth_edges[0:-1] + 0.5 * dz
 
     # read KMT
-    kmt_flat = np.fromfile(grid_attrs['topography_fname'], dtype='>i4', count=-1)
+    topography_fname = INPUTDATA.fetch(grid_attrs['topography_fname'], downloader=downloader)
+    kmt_flat = np.fromfile(topography_fname, dtype='>i4', count=-1)
     assert kmt_flat.shape[0] == (
         nlat * nlon
     ), f'unexpected dims in topography file: {grid_attrs["topography_fname"]}'
@@ -77,7 +117,8 @@ def get_grid(grid_name, scrip=False):
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # read REGION_MASK
-    region_mask_flat = np.fromfile(grid_attrs['region_mask_fname'], dtype='>i4', count=-1)
+    region_mask_fname = INPUTDATA.fetch(grid_attrs['region_mask_fname'], downloader=downloader)
+    region_mask_flat = np.fromfile(region_mask_fname, dtype='>i4', count=-1)
     assert region_mask_flat.shape[0] == (
         nlat * nlon
     ), f'unexpected dims in region_mask file: {grid_attrs["region_mask_fname"]}'

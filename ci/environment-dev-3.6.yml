@@ -21,3 +21,5 @@ dependencies:
   - docrep
   - pytest-lazy-fixture
   - pytest-xdist
+  - pooch
+  - watermark

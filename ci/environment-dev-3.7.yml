@@ -31,3 +31,5 @@ dependencies:
   - pytest-lazy-fixture
   - pytest-xdist
   - sphinx-copybutton
+  - pooch
+  - watermark

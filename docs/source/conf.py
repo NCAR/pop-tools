@@ -42,10 +42,21 @@ extensions = [
     'numpydoc',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
-    # "sphinx_copybutton",
-    # "recommonmark",
+    'sphinx.ext.mathjax',  # for math equations
     'nbsphinx',
 ]
+
+# Enable notebook execution
+# https://nbsphinx.readthedocs.io/en/0.4.2/never-execute.html
+nbsphinx_execute = 'auto'
+# Allow errors in all notebooks by
+nbsphinx_allow_errors = True
+
+# Disable cell timeout
+nbsphinx_timeout = -1
+
+nbsphinx_kernel_name = 'python3'
+
 
 extlinks = {
     'issue': ('https://github.com/NCAR/pop-tools/issues/%s', 'GH#'),
@@ -54,6 +65,7 @@ extlinks = {
 numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+html_static_path = ['../_build/html/_static']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -68,7 +80,7 @@ master_doc = 'index'
 current_year = datetime.datetime.now().year
 project = u'pop-tools'
 copyright = u'2018-{}, University Corporation for Atmospheric Research'.format(current_year)
-author = u'Earth System Informatics Team'
+author = u'The NCAR Experimental Development (Xdev) Team'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -89,7 +101,8 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+# exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+exclude_patterns = ['_build', '**.ipynb_checkpoints', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
