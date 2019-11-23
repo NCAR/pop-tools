@@ -25,9 +25,9 @@ dependencies:
   - pytest-xdist
   - recommonmark
   - scipy
-  - sphinx_rtd_theme=0.4.2
+  - sphinx_rtd_theme
   - sphinx-copybutton
-  - sphinx=1.8.2
+  - sphinx
   - watermark
   - xarray>=0.12
   - zarr
