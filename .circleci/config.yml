@@ -12,7 +12,7 @@ workflows:
 
 default-job: &default-job
   docker:
-    - image: conda/miniconda3:latest
+    - image: continuumio/miniconda3:latest
   steps:
     - checkout
     - restore_cache:
@@ -62,7 +62,7 @@ jobs:
 
   "docs-build":
     docker:
-      - image: conda/miniconda3:latest
+      - image: continuumio/miniconda3:latest
 
     environment:
       PYTHON: "3.7"
