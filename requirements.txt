@@ -3,5 +3,5 @@ numba
 pyyaml
 xarray
 dask
-pooch
+pooch>=0.7.0
 xgcm

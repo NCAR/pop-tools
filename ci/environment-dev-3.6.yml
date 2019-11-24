@@ -2,24 +2,34 @@ name: pop-tools-dev
 channels:
   - conda-forge
 dependencies:
+  - autopep8
+  - black
   - bottleneck
   - codecov
+  - docrep
+  - flake8
+  - isort
   - jupyterlab
+  - make
   - matplotlib
+  - nbsphinx
   - netcdf4
   - numba
+  - numpydoc
   - pip
+  - pooch
   - pytest
   - pytest-cov
   - pytest-lazy-fixture
   - pytest-xdist
   - python=3.6
+  - pyyaml
+  - recommonmark
   - scipy
-  - zarr
-  - docrep
-  - pytest-lazy-fixture
-  - pytest-xdist
-  - pooch
+  - sphinx-copybutton
+  - sphinx=1.8.2
+  - sphinx_rtd_theme=0.4.2
   - watermark
+  - zarr
   - pip:
       - git+https://github.com/xgcm/xgcm.git

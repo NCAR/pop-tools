@@ -6,6 +6,7 @@ dependencies:
   - black
   - bottleneck
   - codecov
+  - docrep
   - flake8
   - isort
   - jupyterlab
@@ -16,23 +17,19 @@ dependencies:
   - numba
   - numpydoc
   - pip
+  - pooch
   - pytest
   - pytest-cov
   - pytest-lazy-fixture
   - pytest-xdist
   - python=3.7
+  - pyyaml
   - recommonmark
   - scipy
-  - sphinx_rtd_theme=0.4.2
   - sphinx-copybutton
   - sphinx=1.8.2
-  - xgcm
-  - zarr
-  - docrep
-  - pytest-lazy-fixture
-  - pytest-xdist
-  - sphinx-copybutton
-  - pooch
+  - sphinx_rtd_theme=0.4.2
   - watermark
+  - zarr
   - pip:
       - git+https://github.com/xgcm/xgcm.git
