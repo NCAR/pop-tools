@@ -34,4 +34,5 @@ dependencies:
   - sphinx-copybutton
   - pooch
   - watermark
-  - xgcm
+  - pip:
+      - git+https://github.com/xgcm/xgcm.git

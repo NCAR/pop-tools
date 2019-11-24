@@ -15,10 +15,11 @@ dependencies:
   - pytest-xdist
   - python=3.6
   - scipy
-  - xgcm
   - zarr
   - docrep
   - pytest-lazy-fixture
   - pytest-xdist
   - pooch
   - watermark
+  - pip:
+      - git+https://github.com/xgcm/xgcm.git
