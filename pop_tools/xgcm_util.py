@@ -20,10 +20,14 @@ def _add_pop_dims_to_dataset(ds):
     ds_new['nlat_t'] = xr.Variable(('nlat_t'), np.arange(len(ds.nlat)) + 0.5, {'axis': 'Y'})
 
     # add metadata to z grid
-    ds_new['z_t'].attrs.update({'axis': 'Z'})
-    ds_new['z_w'].attrs.update({'axis': 'Z', 'c_grid_axis_shift': -0.5})
-    ds_new['z_w_top'].attrs.update({'axis': 'Z', 'c_grid_axis_shift': -0.5})
-    ds_new['z_w_bot'].attrs.update({'axis': 'Z', 'c_grid_axis_shift': 0.5})
+    if 'z_t' in ds_new.variables:
+        ds_new['z_t'].attrs.update({'axis': 'Z'})
+    if 'z_w' in ds_new.variables:
+        ds_new['z_w'].attrs.update({'axis': 'Z', 'c_grid_axis_shift': -0.5})
+    if 'z_w_top' in ds_new.variables:
+        ds_new['z_w_top'].attrs.update({'axis': 'Z', 'c_grid_axis_shift': -0.5})
+    if 'z_w_bot' in ds_new.variables:
+        ds_new['z_w_bot'].attrs.update({'axis': 'Z', 'c_grid_axis_shift': 0.5})
 
     return ds_new
 
@@ -98,13 +102,15 @@ def relabel_pop_dims(ds):
     return ds_new
 
 
-def get_xgcm_grid(ds):
+def get_xgcm_grid(ds, **kwargs):
     """Return an xgcm Grid object
 
     Parameters
     ----------
     ds : xarray.Dataset
         An xarray Dataset
+    kwargs:
+       Additional keyword arguments are passed through to `xgcm.Grid` class.
 
     Returns
     -------
@@ -113,46 +119,51 @@ def get_xgcm_grid(ds):
 
     Examples
     --------
-    >>> from pop_tools import get_xgcm_grid
+    >>> from pop_tools import get_xgcm_grid, DATASETS
     >>> import xarray as xr
-    >>> ds = xr.open_dataset("./tests/data/cesm_pop_monthly.T62_g17.nc")
+    >>> fname = DATASETS.fetch("iron_tracer.nc")
+    >>> ds = xr.open_dataset(fname)
     >>> ds
     <xarray.Dataset>
-    Dimensions:       (d2: 2, lat_aux_grid: 395, nlat: 384, nlon: 320, time: 1, z_t: 60)
+    Dimensions:    (nlat: 384, nlon: 320, time: 24, z_t: 60, z_w_bot: 60, z_w_top: 60)
     Coordinates:
-        TLAT          (nlat, nlon) float64 ...
-        TLONG         (nlat, nlon) float64 ...
-        ULAT          (nlat, nlon) float64 ...
-        ULONG         (nlat, nlon) float64 ...
-    * lat_aux_grid  (lat_aux_grid) float32 -79.48815 -78.952896 ... 89.47441 90.0
-    * time          (time) object 0173-01-01 00:00:00
-    * z_t           (z_t) float32 500.0 1500.0 2500.0 ... 512502.8 537500.0
-    Dimensions without coordinates: d2, nlat, nlon
+    * time       (time) object 0249-02-01 00:00:00 ... 0251-01-01 00:00:00
+    * z_t        (z_t) float32 500.0 1500.0 2500.0 ... 487508.34 512502.8 537500.0
+        TLAT       (nlat, nlon) float64 ...
+        ULONG      (nlat, nlon) float64 ...
+        TLONG      (nlat, nlon) float64 ...
+        ULAT       (nlat, nlon) float64 ...
+    * z_w_top    (z_w_top) float32 0.0 1000.0 2000.0 ... 500004.7 525000.94
+    * z_w_bot    (z_w_bot) float32 1000.0 2000.0 3000.0 ... 525000.94 549999.06
+    Dimensions without coordinates: nlat, nlon
     Data variables:
-        SALT          (time, z_t, nlat, nlon) float32 ...
-        TEMP          (time, z_t, nlat, nlon) float32 ...
-        UVEL          (time, z_t, nlat, nlon) float32 ...
-        VVEL          (time, z_t, nlat, nlon) float32 ...
-        time_bound    (time, d2) object ...
-    Attributes:
-        title:             g.e21.G1850ECOIAF.T62_g17.004
-        history:           Sun May 26 14:13:02 2019: ncks -4 -L 9 cesm_pop_monthl...
-        Conventions:       CF-1.0; http://www.cgd.ucar.edu/cms/eaton/netcdf/CF-cu...
-        time_period_freq:  month_1
-        model_doi_url:     https://doi.org/10.5065/D67H1H0V
-        contents:          Diagnostic and Prognostic Variables
-        source:            CCSM POP2, the CCSM Ocean Component
-        revision:          $Id: tavg.F90 90507 2019-01-18 20:54:19Z altuntas@ucar...
-        calendar:          All years have exactly  365 days.
-        start_time:        This dataset was created on 2019-05-26 at 11:20:07.5
-        cell_methods:      cell_methods = time: mean ==> the variable values are ...
-        NCO:               netCDF Operators version 4.7.4 (http://nco.sf.net)
+        UE         (time, z_t, nlat, nlon) float32 ...
+        VN         (time, z_t, nlat, nlon) float32 ...
+        WT         (time, z_w_top, nlat, nlon) float32 ...
+        HDIFE      (time, z_t, nlat, nlon) float32 ...
+        HDIFN      (time, z_t, nlat, nlon) float32 ...
+        HDIFB      (time, z_w_bot, nlat, nlon) float32 ...
+        DIA_IMPVF  (time, z_w_bot, nlat, nlon) float32 ...
+        KPP_SRC    (time, z_t, nlat, nlon) float32 ...
+        STF        (time, nlat, nlon) float32 ...
+        SMS        (time, nlat, nlon) float32 ...
     >>> grid = get_xgcm_grid(ds)
     >>> grid
     <xgcm.Grid>
+    Z Axis (periodic):
+        * center   z_t --> left
+        * right    z_w_bot --> center
+        * left     z_w_top --> center
+    Y Axis (periodic):
+        * center   nlat_t --> right
+        * right    nlat_u --> center
+    X Axis (periodic):
+        * center   nlon_t --> right
+        * right    nlon_u --> center
 
     """
     import xgcm
 
-    grid = xgcm.Grid(ds)
+    ds = relabel_pop_dims(ds)
+    grid = xgcm.Grid(ds, **kwargs)
     return grid
