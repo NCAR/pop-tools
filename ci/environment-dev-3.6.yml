@@ -6,6 +6,7 @@ dependencies:
   - black
   - bottleneck
   - codecov
+  - dask
   - docrep
   - flake8
   - isort
@@ -30,6 +31,7 @@ dependencies:
   - sphinx=1.8.2
   - sphinx_rtd_theme=0.4.2
   - watermark
+  - xarray
   - zarr
   - pip:
       - git+https://github.com/xgcm/xgcm.git
