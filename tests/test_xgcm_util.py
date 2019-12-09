@@ -6,7 +6,9 @@ import pop_tools
 from pop_tools import DATASETS
 
 
-@pytest.mark.parametrize('file', ['tend_zint_100m_Fe.nc', 'g.e20.G.TL319_t13.control.001_hfreq.nc'])
+@pytest.mark.parametrize(
+    'file', ['tend_zint_100m_Fe.nc', 'g.e20.G.TL319_t13.control.001_hfreq-coarsen.nc']
+)
 def test_to_xgcm_grid_dataset(file):
     filepath = DATASETS.fetch(file)
     ds = xr.open_dataset(filepath)
