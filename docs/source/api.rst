@@ -39,7 +39,7 @@ xgcm utilities
 ~~~~~~~~~~~~~~
 
 .. autosummary::
-   get_xgcm_grid
+   to_xgcm_grid_dataset
 
 .. currentmodule:: pop_tools
 
@@ -55,4 +55,4 @@ xgcm utilities
 
 .. autofunction:: lateral_fill
 
-.. autofunction:: get_xgcm_grid
+.. autofunction:: to_xgcm_grid_dataset

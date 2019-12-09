@@ -101,7 +101,7 @@ def relabel_pop_dims(ds):
     return ds_new
 
 
-def get_xgcm_grid(ds, **kwargs):
+def to_xgcm_grid_dataset(ds, **kwargs):
     """Return an xgcm Grid object
 
     Parameters
@@ -146,7 +146,7 @@ def get_xgcm_grid(ds, **kwargs):
         KPP_SRC    (time, z_t, nlat, nlon) float32 ...
         STF        (time, nlat, nlon) float32 ...
         SMS        (time, nlat, nlon) float32 ...
-    >>> grid = get_xgcm_grid(ds)
+    >>> grid, ds_new = to_xgcm_grid_dataset(ds)
     >>> grid
     <xgcm.Grid>
     Z Axis (periodic):
@@ -163,6 +163,6 @@ def get_xgcm_grid(ds, **kwargs):
     """
     import xgcm
 
-    ds = relabel_pop_dims(ds)
-    grid = xgcm.Grid(ds, **kwargs)
-    return grid
+    ds_new = relabel_pop_dims(ds)
+    grid = xgcm.Grid(ds_new, **kwargs)
+    return grid, ds_new
