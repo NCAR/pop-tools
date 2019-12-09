@@ -171,8 +171,8 @@ def to_xgcm_grid_dataset(ds, **kwargs):
     * z_t_150m         (z_t_150m) float32 500.0 1500.0 2500.0 ... 13500.0 14500.0
     * z_w              (z_w) float32 0.0 1000.0 2000.0 ... 549999.06 574999.06
     * z_w_top          (z_w_top) float32 0.0 1000.0 2000.0 ... 549999.06 574999.06
-        TLONG            (nlat_t, nlon_t) float64 nan nan nan nan ... nan nan nan
-        TLAT             (nlat_t, nlon_t) float64 nan nan nan nan ... nan nan nan
+      TLONG            (nlat_t, nlon_t) float64 nan nan nan nan ... nan nan nan
+      TLAT             (nlat_t, nlon_t) float64 nan nan nan nan ... nan nan nan
     * nlon_u           (nlon_u) int64 1 2 3 4 5 6 7 ... 355 356 357 358 359 360
     * nlat_u           (nlat_u) int64 1 2 3 4 5 6 7 ... 235 236 237 238 239 240
     * nlon_t           (nlon_t) float64 0.5 1.5 2.5 3.5 ... 357.5 358.5 359.5
