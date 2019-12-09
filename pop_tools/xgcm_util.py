@@ -102,7 +102,7 @@ def relabel_pop_dims(ds):
 
 
 def to_xgcm_grid_dataset(ds, **kwargs):
-    """Return an xgcm Grid object
+    """Modify POP model output to be compatible with xgcm.
 
     Parameters
     ----------
@@ -115,6 +115,9 @@ def to_xgcm_grid_dataset(ds, **kwargs):
     -------
     grid : xgcm.Grid
         An xgcm Grid object
+    ds_new : xarray.Dataset
+        Xarray dataset with distinct dimensions for variables at different
+        grid points.
 
     Examples
     --------

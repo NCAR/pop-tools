@@ -18,3 +18,4 @@ def test_to_xgcm_grid_dataset(file):
     new_spatial_coords = set(['nlon_u', 'nlat_u', 'nlon_t', 'nlat_t'])
     for coord in new_spatial_coords:
         assert coord in ds_new.coords
+        assert coord not in ds.coords
