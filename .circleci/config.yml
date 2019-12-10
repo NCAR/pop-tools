@@ -7,7 +7,6 @@ workflows:
       - "python-3.6"
       - "python-3.7"
       - "python-3.8"
-      - "docs-build"
       - "linting"
 
 default-job: &default-job
@@ -58,41 +57,3 @@ jobs:
       PYTHON: "3.7"
       ENV_NAME: "pop-tools-dev"
       TEST_SCRIPT: "run-linter.sh"
-
-
-  "docs-build":
-    docker:
-      - image: continuumio/miniconda3:latest
-
-    environment:
-      PYTHON: "3.7"
-      ENV_NAME: "pop-tools-dev"
-
-    steps:
-
-      # Get our data and merge with upstream
-      - checkout
-      # Restore cached files to speed things up
-      - restore_cache:
-          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
-      - run: # install and activate conda environment
-          name: Install conda environment
-          command: ./ci/install-circle.sh
-      - run:
-          name: Check documentation build
-          command: |
-            source activate ${ENV_NAME}
-            pushd docs
-            make html
-            popd
-      # Cache some files for a speedup in subsequent builds
-      - save_cache:
-          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
-          paths:
-            - "/opt/conda/envs/${ENV_NAME}/"
-            - "/opt/conda/pkgs"
-
-      # Tell Circle to store the documentation output in a folder that we can access later
-      - store_artifacts:
-          path: docs/_build/html
-          destination: html
