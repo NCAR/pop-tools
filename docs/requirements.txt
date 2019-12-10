@@ -14,4 +14,4 @@ numba
 fsspec
 watermark
 pooch
--e git+https://github.com/xgcm/xgcm.git
+-e git+https://github.com/xgcm/xgcm.git#egg=xgcm
