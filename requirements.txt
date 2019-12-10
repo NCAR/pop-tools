@@ -4,3 +4,4 @@ pyyaml
 xarray
 dask
 pooch>=0.7.0
+xgcm

@@ -11,6 +11,7 @@ dependencies:
   - flake8
   - isort
   - jupyterlab
+  - make
   - matplotlib
   - nbsphinx
   - netcdf4
@@ -22,7 +23,7 @@ dependencies:
   - pytest-cov
   - pytest-lazy-fixture
   - pytest-xdist
-  - python=3.7
+  - python=3.6
   - pyyaml
   - recommonmark
   - scipy
