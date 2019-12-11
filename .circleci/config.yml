@@ -4,9 +4,7 @@ workflows:
   version: 2
   default:
     jobs:
-      - "python-3.6"
-      - "python-3.7"
-      # - "python-3.8"
+      - "upstream-dev"
       - "linting"
 
 default-job: &default-job
@@ -15,7 +13,7 @@ default-job: &default-job
   steps:
     - checkout
     - restore_cache:
-        key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+        key: deps-{{ checksum "./ci/environment.yml" }}
     - run:
         name: Install conda environment
         command: ./ci/install-circle.sh
@@ -23,33 +21,40 @@ default-job: &default-job
         name: Running checks
         command: ./ci/${TEST_SCRIPT}
     - save_cache:
-        key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+        key: deps-{{ checksum "./ci/environment.yml" }}
         paths:
           - "/opt/conda/envs/${ENV_NAME}/"
           - "/opt/conda/pkgs"
 
 
 jobs:
-  "python-3.6":
-    <<: *default-job
+  "upstream-dev":
+    docker:
+      - image: continuumio/miniconda3:latest
     environment:
-      PYTHON: "3.6"
       ENV_NAME: "pop-tools-dev"
-      TEST_SCRIPT: "run-checks.sh"
-
-  "python-3.7":
-    <<: *default-job
-    environment:
-      PYTHON: "3.7"
-      ENV_NAME: "pop-tools-dev"
-      TEST_SCRIPT: "run-checks.sh"
-
-  # "python-3.8":
-  #   <<: *default-job
-  #   environment:
-  #     PYTHON: "3.8"
-  #     ENV_NAME: "pop-tools-dev"
-  #     TEST_SCRIPT: "run-checks.sh"
+    steps:
+      - checkout
+      - restore_cache:
+          key: deps-{{ checksum "./ci/environment.yml" }}
+      - run:
+          name: Install conda environment
+          command: |
+            conda config --set always_yes true --set changeps1 false --set quiet true
+            conda env update -f ci/environment-upstream-dev.yml
+            source activate ${ENV_NAME}
+            python -m pip install --no-deps --quiet -e .
+            conda list -n ${ENV_NAME}
+      - run:
+          name: Running Tests
+          command: |
+             source activate ${ENV_NAME}
+             pytest -n 4 --junitxml=test-reports/junit.xml --cov=./ --verbose
+      - save_cache:
+          key: deps-{{ checksum "./ci/environment.yml" }}
+          paths:
+            - "/opt/conda/envs/${ENV_NAME}/"
+            - "/opt/conda/pkgs"
 
   "linting":
     <<: *default-job
