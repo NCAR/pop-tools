@@ -27,9 +27,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: $CONDA/pkgs
-          key: ${{ runner.os }}-deps-${{ hashFiles('./ci/environment.yml') }}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-deps-${{ hashFiles('ci/environment.yml') }}
           restore-keys: |
-            ${{ runner.os }}-deps-
+            ${{ runner.os }}-${{ matrix.python-version }}-deps-
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
