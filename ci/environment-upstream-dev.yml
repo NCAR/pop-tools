@@ -20,6 +20,6 @@ dependencies:
   - scipy
   - zarr
   - pip:
-      - git+https://github.com/xgcm/xgcm.git
-      - git+https://github.com/pydata/xarray.git
-      - git+https://github.com/dask/dask.git
+      - git+https://github.com/pydata/xarray.git#egg=xarray
+      - git+https://github.com/dask/dask.git#egg=dask
+      - git+https://github.com/xgcm/xgcm.git#egg=xgcm
