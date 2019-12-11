@@ -49,7 +49,7 @@ jobs:
           name: Running Tests
           command: |
              source activate ${ENV_NAME}
-             pytest -n 4 --junitxml=test-reports/junit.xml --cov=./ --verbose
+             pytest --junitxml=test-reports/junit.xml --cov=./ --verbose
       - save_cache:
           key: deps-{{ checksum "./ci/environment.yml" }}
           paths:
