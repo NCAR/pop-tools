@@ -24,6 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: "x64"
       - name: Get conda cache directory
+        uses: actions/cache@v1
         with:
           path: $CONDA/pkgs
           key: ${{ runner.os }}-deps-${{ hashFiles('./ci/environment.yml') }}
