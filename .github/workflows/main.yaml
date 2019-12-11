@@ -24,9 +24,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: "x64"
       - name: Get conda cache directory
-        uses: actions/cache@v1
+        id: conda-cache
+        run: |
+          echo "::set-output name=dir::$(echo $CONDA/pkgs)"
+      - uses: actions/cache@v1
         with:
-          path: $CONDA/pkgs
+          path: ${{ steps.conda-cache.outputs.dir }}
           key: ${{ runner.os }}-${{ matrix.python-version }}-deps-${{ hashFiles('ci/environment.yml') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.python-version }}-deps-
