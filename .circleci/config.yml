@@ -40,10 +40,10 @@ jobs:
       - run:
           name: Install conda environment
           command: |
-            conda config --set always_yes true --set changeps1 false --set quiet true
+            conda config --set always_yes true --set changeps1 false
             conda env update -f ci/environment-upstream-dev.yml
             source activate ${ENV_NAME}
-            python -m pip install --no-deps --quiet -e .
+            python -m pip install --no-deps -e .
             conda list -n ${ENV_NAME}
       - run:
           name: Running Tests
