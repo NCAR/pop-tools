@@ -22,5 +22,6 @@ dependencies:
   - pip:
       - git+https://github.com/xgcm/xgcm.git
       - git+https://github.com/pydata/xarray.git
+      - git+https://github.com/numba/llvmlite.git
       - git+https://github.com/dask/dask.git
       - git+https://github.com/numba/numba.git
