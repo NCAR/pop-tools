@@ -8,7 +8,6 @@ dependencies:
   - docrep
   - nbsphinx
   - netcdf4
-  - numba
   - pip
   - pooch
   - pytest
