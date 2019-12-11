@@ -23,6 +23,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: "x64"
+      - name: Get conda cache directory
+        with:
+          path: $CONDA/pkgs
+          key: ${{ runner.os }}-deps-${{ hashFiles('./ci/environment.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
