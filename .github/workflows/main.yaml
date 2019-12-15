@@ -19,7 +19,7 @@ jobs:
           args: ". --line-length 100 --skip-string-normalization"
 
   lint-flake8:
-    name: Lint-Flak8
+    name: Flake8
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,3 +28,20 @@ jobs:
         uses: cclauss/GitHub-Action-for-Flake8@master
         with:
           args: "flake8 pop_tools"
+
+  lint-isort:
+    name: isort
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install isort
+        run: |
+          python -m pip install isort
+      - name: isort checks
+        run: |
+          isort --recursive -w 100 --check-only pop_tools
