@@ -7,27 +7,40 @@ on:
     branches: "*"
 
 jobs:
+
   lint-black:
-    name: Black Formatter
+    name: black-formatter
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Black Code Formatter
-        uses: lgeiger/black-action@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
         with:
-          args: ". --line-length 100 --skip-string-normalization"
+          python-version: 3.7
+      - name: Install isort
+        run: |
+          python -m pip install black
+      - name: Black Code Formatter
+        run: |
+          black --check --line-length 100 --skip-string-normalization pop_tools
 
   lint-flake8:
-    name: Flake8
+    name: flake8
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Flake8 check
-        uses: cclauss/GitHub-Action-for-Flake8@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
         with:
-          args: "flake8 pop_tools"
+          python-version: 3.7
+      - name: Install isort
+        run: |
+          python -m pip install flake8
+      - name: Flake8 check
+        run: |
+          flake8 pop_tools
 
   lint-isort:
     name: isort
@@ -42,6 +55,6 @@ jobs:
       - name: Install isort
         run: |
           python -m pip install isort
-      - name: isort checks
+      - name: isort check
         run: |
           isort --recursive -w 100 --check-only pop_tools
