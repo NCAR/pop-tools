@@ -7,7 +7,7 @@ on:
     branches: "*"
 
 jobs:
-  checks:
+  lint-black:
     name: Black Formatter
     runs-on: ubuntu-latest
     steps:
@@ -17,3 +17,14 @@ jobs:
         uses: lgeiger/black-action@master
         with:
           args: ". --line-length 100 --skip-string-normalization"
+
+  lint-flake8:
+    name: Lint-Flak8
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Flake8 check
+        uses: cclauss/GitHub-Action-for-Flake8@master
+        with:
+          args: "flake8 pop_tools"
