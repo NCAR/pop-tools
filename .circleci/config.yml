@@ -23,12 +23,18 @@ workflows:
 shared: &shared
   steps:
     - checkout
+    - setup_remote_docker:
+        docker_layer_caching: true
     - restore_cache:
         key: deps-{{ checksum "./ci/environment.yml" }}
     - run:
-        name: Install conda environment
+        name: Install dependencies in (base environment)
         command: |
           conda env update -n base -f ${ENV_FILE}
+
+    - run:
+        name: List packages in the current environment (base)
+        command: |
           conda list
     - run:
         name: Running Tests
