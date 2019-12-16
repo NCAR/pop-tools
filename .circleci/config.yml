@@ -2,6 +2,14 @@ version: 2
 # Tell CircleCI to use this workflow
 workflows:
   version: 2
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
   default:
     jobs:
       - "upstream-dev"
