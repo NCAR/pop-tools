@@ -5,60 +5,48 @@ workflows:
   default:
     jobs:
       - "upstream-dev"
-      - "linting"
+      - "python-3.6"
+      - "python-3.7"
 
-default-job: &default-job
-  docker:
-    - image: continuumio/miniconda3:latest
+shared: &shared
   steps:
     - checkout
     - restore_cache:
-        key: deps-{{ checksum "./ci/environment.yml" }}
+        key: deps-{{ checksum "${ENV_FILE}" }}
     - run:
         name: Install conda environment
-        command: ./ci/install-circle.sh
+        command: |
+          conda env update -n base -f ${ENV_FILE}
+          conda list
     - run:
-        name: Running checks
-        command: ./ci/${TEST_SCRIPT}
+        name: Running Tests
+        command: |
+          pytest -n 4 --junitxml=test-reports/junit.xml --cov=./ --verbose
+          codecov
     - save_cache:
-        key: deps-{{ checksum "./ci/environment.yml" }}
+        key: deps-{{ checksum "${ENV_FILE}" }}
         paths:
-          - "/opt/conda/envs/${ENV_NAME}/"
           - "/opt/conda/pkgs"
 
 
 jobs:
   "upstream-dev":
+    <<: *shared
     docker:
-      - image: continuumio/miniconda3:latest
+      - image: ncarxdev/miniconda:3.7
     environment:
-      ENV_NAME: "pop-tools-dev"
-    steps:
-      - checkout
-      - restore_cache:
-          key: deps-{{ checksum "./ci/environment.yml" }}
-      - run:
-          name: Install conda environment
-          command: |
-            conda config --set always_yes true --set changeps1 false
-            conda env update -f ci/environment-upstream-dev.yml
-            source activate ${ENV_NAME}
-            python -m pip install --no-deps -e .
-            conda list -n ${ENV_NAME}
-      - run:
-          name: Running Tests
-          command: |
-             source activate ${ENV_NAME}
-             pytest --junitxml=test-reports/junit.xml --cov=./ --verbose
-      - save_cache:
-          key: deps-{{ checksum "./ci/environment.yml" }}
-          paths:
-            - "/opt/conda/envs/${ENV_NAME}/"
-            - "/opt/conda/pkgs"
+      ENV_FILE: "./ci/environment-upstream-dev.yml"
 
-  "linting":
-    <<: *default-job
+  "python-3.6":
+    <<: *shared
+    docker:
+      - image: ncarxdev/miniconda:3.6
     environment:
-      PYTHON: "3.7"
-      ENV_NAME: "pop-tools-dev"
-      TEST_SCRIPT: "run-linter.sh"
+      ENV_FILE: "./ci/environment.yml"
+
+  "python-3.7":
+    <<: *shared
+    docker:
+      - image: ncarxdev/miniconda:3.7
+    environment:
+      ENV_FILE: "./ci/environment.yml"

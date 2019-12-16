@@ -2,29 +2,15 @@ name: pop-tools-dev
 channels:
   - conda-forge
 dependencies:
-  - autopep8
-  - black
   - bottleneck
   - codecov
-  - dask
   - docrep
-  - flake8
-  - isort
-  - matplotlib
   - nbsphinx
-  - netcdf4
   - numba
   - pip
   - pooch
-  - pytest
   - pytest-cov
-  - pytest-lazy-fixture
-  - pytest-xdist
-  - python=3.7
   - pyyaml
-  - recommonmark
   - scipy
-  - xarray
-  - zarr
   - pip:
       - git+https://github.com/xgcm/xgcm.git
