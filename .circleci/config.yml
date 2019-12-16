@@ -10,6 +10,10 @@ workflows:
             branches:
               only:
                 - master
+    jobs:
+      - "upstream-dev"
+      - "python-3.6"
+      - "python-3.7"
   default:
     jobs:
       - "upstream-dev"
