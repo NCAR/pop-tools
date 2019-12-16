@@ -21,7 +21,7 @@ shared: &shared
     - run:
         name: Running Tests
         command: |
-          pytest -n 4 --junitxml=test-reports/junit.xml --cov=./ --verbose
+          pytest --junitxml=test-reports/junit.xml --cov=./ --verbose
           codecov
     - save_cache:
         key: deps-{{ checksum "./ci/environment.yml" }}
