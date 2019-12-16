@@ -23,8 +23,6 @@ workflows:
 shared: &shared
   steps:
     - checkout
-    - setup_remote_docker:
-        docker_layer_caching: true
     - restore_cache:
         key: deps-{{ checksum "./ci/environment.yml" }}
     - run:
