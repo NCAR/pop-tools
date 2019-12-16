@@ -12,7 +12,7 @@ shared: &shared
   steps:
     - checkout
     - restore_cache:
-        key: deps-{{ checksum "${ENV_FILE}" }}
+        key: deps-{{ checksum "./ci/environment.yml" }}
     - run:
         name: Install conda environment
         command: |
@@ -24,7 +24,7 @@ shared: &shared
           pytest -n 4 --junitxml=test-reports/junit.xml --cov=./ --verbose
           codecov
     - save_cache:
-        key: deps-{{ checksum "${ENV_FILE}" }}
+        key: deps-{{ checksum "./ci/environment.yml" }}
         paths:
           - "/opt/conda/pkgs"
 
