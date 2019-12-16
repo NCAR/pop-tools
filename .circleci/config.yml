@@ -44,6 +44,13 @@ shared: &shared
         name: Uploading code coverage report
         command: |
           codecov
+
+    - store_test_results:
+      path: test-reports
+
+    - store_artifacts:
+        path: test-reports
+
     - save_cache:
         key: deps-{{ checksum "./ci/environment.yml" }}
         paths:
