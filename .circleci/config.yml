@@ -46,7 +46,7 @@ shared: &shared
           codecov
 
     - store_test_results:
-      path: test-reports
+        path: test-reports
 
     - store_artifacts:
         path: test-reports
