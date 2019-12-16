@@ -14,11 +14,13 @@ workflows:
       - "upstream-dev"
       - "python-3.6"
       - "python-3.7"
+      # - "python-3.8"
   default:
     jobs:
       - "upstream-dev"
       - "python-3.6"
       - "python-3.7"
+      # - "python-3.8"
 
 shared: &shared
   steps:
@@ -69,3 +71,11 @@ jobs:
       - image: ncarxdev/miniconda:3.7
     environment:
       ENV_FILE: "./ci/environment.yml"
+
+  # Waiting Waiting on Numba 0.47 release
+  # "python-3.8":
+  #   <<: *shared
+  #   docker:
+  #     - image: ncarxdev/miniconda:3.8
+  #   environment:
+  #     ENV_FILE: "./ci/environment.yml"
