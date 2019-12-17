@@ -1,6 +1,10 @@
 POP-tools
 =========
 
+.. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/code-style?label=Code%20Style&style=for-the-badge
+    :target: https://github.com/NCAR/pop-tools/actions
+    :alt: GitHub Workflow Status
+
 
 .. image:: https://img.shields.io/circleci/project/github/NCAR/pop-tools/master.svg?style=for-the-badge&logo=circleci
     :target: https://circleci.com/gh/NCAR/pop-tools/tree/master
@@ -44,7 +48,3 @@ It is also available from `conda-forge` for conda installations:
 .. code-block:: bash
 
     conda install -c conda-forge pop-tools
-
-
-
-

@@ -2,89 +2,87 @@ version: 2
 # Tell CircleCI to use this workflow
 workflows:
   version: 2
-  default:
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
+      - "upstream-dev"
       - "python-3.6"
       - "python-3.7"
-      - "docs-build"
-      - "linting"
+      # - "python-3.8"
+  default:
+    jobs:
+      - "upstream-dev"
+      - "python-3.6"
+      - "python-3.7"
+      # - "python-3.8"
 
-default-job: &default-job
-  docker:
-    - image: conda/miniconda3:latest
+shared: &shared
   steps:
     - checkout
     - restore_cache:
-        key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+        key: deps-{{ checksum "./ci/environment.yml" }}
     - run:
-        name: Install conda environment
-        command: ./ci/install-circle.sh
+        name: Install dependencies in (base environment)
+        command: |
+          conda env update -n base -f ${ENV_FILE}
+
     - run:
-        name: Running checks
-        command: ./ci/${TEST_SCRIPT}
+        name: List packages in the current environment (base)
+        command: |
+          conda list
+    - run:
+        name: Running Tests
+        command: |
+          pytest -n 2 --junitxml=test-reports/junit.xml --cov=./ --verbose
+    - run:
+        name: Uploading code coverage report
+        command: |
+          codecov
+
+    - store_test_results:
+        path: test-reports
+
+    - store_artifacts:
+        path: test-reports
+
     - save_cache:
-        key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+        key: deps-{{ checksum "./ci/environment.yml" }}
         paths:
-          - "/usr/local/envs/${ENV_NAME}/"
-          - "/usr/local/pkgs"
+          - "/opt/conda/pkgs"
 
 
 jobs:
-  "python-3.6":
-    <<: *default-job
+  "upstream-dev":
+    <<: *shared
+    docker:
+      - image: ncarxdev/miniconda:3.7
     environment:
-      PYTHON: "3.6"
-      ENV_NAME: "pop-tools-dev"
-      TEST_SCRIPT: "run-checks.sh"
+      ENV_FILE: "./ci/environment-upstream-dev.yml"
+
+  "python-3.6":
+    <<: *shared
+    docker:
+      - image: ncarxdev/miniconda:3.6
+    environment:
+      ENV_FILE: "./ci/environment.yml"
 
   "python-3.7":
-    <<: *default-job
-    environment:
-      PYTHON: "3.7"
-      ENV_NAME: "pop-tools-dev"
-      TEST_SCRIPT: "run-checks.sh"
-
-  "linting":
-    <<: *default-job
-    environment:
-      PYTHON: "3.7"
-      ENV_NAME: "pop-tools-dev"
-      TEST_SCRIPT: "run-linter.sh"
-
-
-  "docs-build":
+    <<: *shared
     docker:
-      - image: conda/miniconda3:latest
-
+      - image: ncarxdev/miniconda:3.7
     environment:
-      PYTHON: "3.7"
-      ENV_NAME: "pop-tools-dev"
+      ENV_FILE: "./ci/environment.yml"
 
-    steps:
-
-      # Get our data and merge with upstream
-      - checkout
-      # Restore cached files to speed things up
-      - restore_cache:
-          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
-      - run: # install and activate conda environment
-          name: Install conda environment
-          command: ./ci/install-circle.sh
-      - run:
-          name: Check documentation build
-          command: |
-            source activate ${ENV_NAME}
-            pushd docs
-            make html
-            popd
-      # Cache some files for a speedup in subsequent builds
-      - save_cache:
-          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
-          paths:
-            - "/usr/local/envs/${ENV_NAME}/"
-            - "/usr/local/pkgs"
-
-      # Tell Circle to store the documentation output in a folder that we can access later
-      - store_artifacts:
-          path: docs/_build/html
-          destination: html
+  # Waiting Waiting on Numba 0.47 release
+  # "python-3.8":
+  #   <<: *shared
+  #   docker:
+  #     - image: ncarxdev/miniconda:3.8
+  #   environment:
+  #     ENV_FILE: "./ci/environment.yml"

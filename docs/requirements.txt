@@ -1,0 +1,17 @@
+sphinx
+sphinx_rtd_theme
+nbsphinx
+matplotlib
+numpy
+xarray
+jupyterlab
+netcdf4
+dask
+toolz
+zarr
+numcodecs
+numba
+fsspec
+watermark
+pooch
+-e git+https://github.com/xgcm/xgcm.git#egg=xgcm
