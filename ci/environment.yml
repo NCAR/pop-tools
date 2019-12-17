@@ -4,6 +4,7 @@ channels:
 dependencies:
   - bottleneck
   - codecov
+  - dask
   - docrep
   - nbsphinx
   - numba
@@ -12,5 +13,6 @@ dependencies:
   - pytest-cov
   - pyyaml
   - scipy
+  - xarray
   - pip:
       - git+https://github.com/xgcm/xgcm.git

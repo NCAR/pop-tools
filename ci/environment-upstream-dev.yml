@@ -4,7 +4,6 @@ channels:
 dependencies:
   - bottleneck
   - codecov
-  - toolz
   - docrep
   - numba
   - pip
@@ -12,6 +11,7 @@ dependencies:
   - pytest-cov
   - pyyaml
   - scipy
+  - toolz
   - pip:
       - git+https://github.com/pydata/xarray.git#egg=xarray
       - git+https://github.com/dask/dask.git#egg=dask
