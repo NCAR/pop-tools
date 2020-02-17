@@ -193,8 +193,13 @@ def to_xgcm_grid_dataset(ds, **kwargs):
         S_FLUX_ROFF_VSF  (time, z_w, nlat_t, nlon_t) float32 inf inf inf ... inf inf
 
     """
-    import xgcm
 
+    try:
+        import xgcm
+    except ImportError:
+        raise ImportError(
+            """to_xgcm_grid_dataset() function requires the `xgcm` package. \nYou can install it via PyPI or Conda"""
+        )
     ds_new = relabel_pop_dims(ds)
     grid = xgcm.Grid(ds_new, **kwargs)
     return grid, ds_new

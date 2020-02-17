@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import xarray as xr
 import xgcm
@@ -19,3 +21,13 @@ def test_to_xgcm_grid_dataset(file):
     for coord in new_spatial_coords:
         assert coord in ds_new.coords
         assert coord not in ds.coords
+
+
+def test_to_xgcm_grid_dataset_missing_xgcm():
+    from unittest import mock
+
+    with pytest.raises(ImportError):
+        with mock.patch.dict(sys.modules, {'xgcm': None}):
+            filepath = DATASETS.fetch('tend_zint_100m_Fe.nc')
+            ds = xr.open_dataset(filepath)
+            _, _ = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)

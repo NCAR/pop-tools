@@ -8,8 +8,8 @@ from os.path import exists
 
 from setuptools import setup
 
-if exists('README.md'):
-    with open('README.md') as f:
+if exists('README.rst'):
+    with open('README.rst') as f:
         long_description = f.read()
 else:
     long_description = ''
@@ -29,6 +29,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
     'Topic :: Scientific/Engineering',
 ]
 
@@ -40,7 +41,7 @@ setup(
     license='Apache License 2.0',
     long_description=long_description,
     classifiers=CLASSIFIERS,
-    keywords='ocean modeling',
+    keywords='ocean modeling cesm',
     name='pop-tools',
     packages=['pop_tools'],
     test_suite='tests',

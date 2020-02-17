@@ -3,4 +3,3 @@ pyyaml
 xarray>=0.15.0
 dask>=2.10
 pooch>=0.7.0
-xgcm>=0.3.0
