@@ -1,5 +1,6 @@
-POP-tools
-=========
+POP-tools: Tools to support analysis of POP2-CESM model solutions with xarray
+=============================================================================
+
 
 .. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/code-style?label=Code%20Style&style=for-the-badge
     :target: https://github.com/NCAR/pop-tools/actions
@@ -27,14 +28,13 @@ POP-tools
 
 
 
-Tools to support analysis of POP2-CESM model solutions. See
-documentation_ for more information.
+See full documentation_ for more information.
 
 .. _documentation: https://pop-tools.readthedocs.io/en/latest/
 
 
-Installation (Coming Soon!)
-----------------------------
+Installation
+------------
 
 POP-tools can be installed from PyPI with pip:
 
