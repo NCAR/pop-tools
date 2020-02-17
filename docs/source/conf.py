@@ -48,7 +48,7 @@ extensions = [
 
 # Enable notebook execution
 # https://nbsphinx.readthedocs.io/en/0.4.2/never-execute.html
-nbsphinx_execute = 'auto'
+nbsphinx_execute = 'always'
 # Allow errors in all notebooks by
 nbsphinx_allow_errors = True
 
