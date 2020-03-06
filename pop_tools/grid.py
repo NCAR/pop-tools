@@ -87,16 +87,32 @@ def get_grid(grid_name, scrip=False):
     TLONG = np.empty((nlat, nlon), dtype=np.float)
     _compute_TLAT_TLONG(ULAT, ULONG, TLAT, TLONG, nlat, nlon)
 
-    # generate DXT, DYT, TAREA
+    # generate DXT, DYT
+    # DXT[i,j] = (HTN[i,j] + HTN[i,j−1])/2
     DXT = np.empty((nlat, nlon))
-    DXT[1:nlat, :] = 0.5 * (HTN[0 : nlat - 1, :] + HTN[1:nlat, :])
-    DXT[0, :] = 0.5 * (2 * HTN[0, :] - HTN[1, :] + HTN[0, :])
+    DXT[1:, :] = 0.5 * (HTN[: nlat - 1, :] + HTN[1:, :])
+    # DXT[0, :] = 0.5 * (2 * HTN[0, :] - HTN[1, :] + HTN[0, :])
+    DXT[0, :] = 0.5 * (HTN[0, :] + HTN[-1, :])
 
+    # DYT[i,j] = (HTE[i,j] + HTE[i−1,j])/2
     DYT = np.empty((nlat, nlon))
-    DYT[:, 1:nlon] = 0.5 * (HTE[:, 0 : nlon - 1] + HTE[:, 1:nlon])
+    DYT[:, 1:] = 0.5 * (HTE[:, : nlon - 1] + HTE[:, 1:])
     DYT[:, 0] = 0.5 * (HTE[:, nlon - 1] + HTE[:, 0])
 
+    # generate DXU, DYU
+    # DXU[i,j] = (HTN[i,j] + HTN[i+1,j])/2
+    DXU = np.empty((nlat, nlon))
+    DXU[:, : nlon - 1] = 0.5 * (HTN[:, : nlon - 1] + HTN[:, 1:])
+    DXU[:, nlon - 1] = 0.5 * (HTN[:, nlon - 1] + HTN[:, 0])
+
+    # DYU[i,j] = (HTE[i,j] + HTE[i,j+1])/2
+    DYU = np.empty((nlat, nlon))
+    DYU[: nlat - 1, :] = 0.5 * (HTE[: nlat - 1, :] + HTE[1:, :])
+    DYU[nlat - 1, :] = 0.5 * (HTE[nlat - 1, :] + HTE[0, :])
+
+    # compute TAREA, UAREA
     TAREA = DXT * DYT
+    UAREA = DXU * DYU
 
     # vertical grid
     vert_grid_fname = os.path.join(input_templates_dir, grid_attrs['vert_grid_file'])
@@ -210,10 +226,36 @@ def get_grid(grid_name, scrip=False):
             },
         )
 
+        dso['DXU'] = xr.DataArray(
+            DXU,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'units': 'cm',
+                'long_name': 'x-spacing centered at U points',
+                'coordinates': 'ULONG ULAT',
+            },
+        )
+
+        dso['DYU'] = xr.DataArray(
+            DYU,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'units': 'cm',
+                'long_name': 'y-spacing centered at U points',
+                'coordinates': 'ULONG ULAT',
+            },
+        )
+
         dso['TAREA'] = xr.DataArray(
             TAREA,
             dims=('nlat', 'nlon'),
             attrs={'units': 'cm^2', 'long_name': 'area of T cells', 'coordinates': 'TLONG TLAT'},
+        )
+
+        dso['UAREA'] = xr.DataArray(
+            UAREA,
+            dims=('nlat', 'nlon'),
+            attrs={'units': 'cm^2', 'long_name': 'area of U cells', 'coordinates': 'ULONG ULAT'},
         )
 
         dso['KMT'] = xr.DataArray(
