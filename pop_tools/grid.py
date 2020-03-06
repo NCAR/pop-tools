@@ -92,7 +92,7 @@ def get_grid(grid_name, scrip=False):
     DXT = np.empty((nlat, nlon))
     DXT[1:, :] = 0.5 * (HTN[: nlat - 1, :] + HTN[1:, :])
     # DXT[0, :] = 0.5 * (2 * HTN[0, :] - HTN[1, :] + HTN[0, :])
-    DXT[0, :] = 0.5 * (HTN[0, :] + HTN[-1, :])
+    DXT[0, :] = 0.5 * (HTN[0, :] + HTN[nlat - 1, :])
 
     # DYT[i,j] = (HTE[i,j] + HTE[i−1,j])/2
     DYT = np.empty((nlat, nlon))
