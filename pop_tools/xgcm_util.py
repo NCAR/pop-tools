@@ -98,6 +98,12 @@ def relabel_pop_dims(ds):
             else:
                 dims = new_spatial_dims
             ds_new[vname] = xr.Variable(dims, da.data, da.attrs, da.encoding, fastpath=True)
+    if 'nlat' in ds_new.dims:
+        ds_new = ds_new.drop('nlat')
+    if 'nlon' in ds_new.dims:
+        ds_new = ds_new.drop('nlon')
+    if 'z_w_top' and 'z_w' in ds_new.dims:
+        ds_new = ds_new.drop('z_w_top').rename({'z_w': 'z_w_top'})
     return ds_new
 
 
@@ -201,11 +207,5 @@ def to_xgcm_grid_dataset(ds, **kwargs):
             """to_xgcm_grid_dataset() function requires the `xgcm` package. \nYou can install it via PyPI or Conda"""
         )
     ds_new = relabel_pop_dims(ds)
-    if 'nlat' in ds_new.dims:
-        ds_new = ds_new.drop('nlat')
-    if 'nlon' in ds_new.dims:
-        ds_new = ds_new.drop('nlon')
-    if 'z_w_top' and 'z_w' in ds_new.dims:
-        ds_new = ds_new.drop('z_w_top').rename({'z_w': 'z_w_top'}) 
     grid = xgcm.Grid(ds_new, **kwargs)
     return grid, ds_new
