@@ -98,10 +98,11 @@ def relabel_pop_dims(ds):
             else:
                 dims = new_spatial_dims
             ds_new[vname] = xr.Variable(dims, da.data, da.attrs, da.encoding, fastpath=True)
-    if 'nlat' in ds_new.dims:
-        ds_new = ds_new.drop('nlat')
-    if 'nlon' in ds_new.dims:
-        ds_new = ds_new.drop('nlon')
+    old_coords = ['nlat', 'nlon']
+    for coord in old_coords:
+        if coord in ds_new.coords:
+            ds_new = ds_new.drop_vars(coord)
+        assert coord not in ds_new.dims
     if 'z_w_top' and 'z_w' in ds_new.dims:
         ds_new = ds_new.drop('z_w_top').rename({'z_w': 'z_w_top'})
     return ds_new
