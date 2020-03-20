@@ -17,7 +17,7 @@ def test_to_xgcm_grid_dataset(file):
     grid, ds_new = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)
     assert isinstance(grid, xgcm.Grid)
     assert set(['X', 'Y', 'Z']) == set(grid.axes.keys())
-    new_spatial_coords = set(['nlon_u', 'nlat_u', 'nlon_t', 'nlat_t'])
+    new_spatial_coords = ['nlon_u', 'nlat_u', 'nlon_t', 'nlat_t']
     for coord in new_spatial_coords:
         assert coord in ds_new.coords
         assert coord not in ds.coords
