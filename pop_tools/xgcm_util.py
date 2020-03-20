@@ -102,7 +102,7 @@ def relabel_pop_dims(ds):
     for coord in old_coords:
         if coord in ds_new.coords:
             ds_new = ds_new.drop_vars(coord)
-    if 'z_w_top' and 'z_w' in ds_new.dims:
+    if 'z_w_top' in ds_new.dims and 'z_w' in ds_new.dims:
         ds_new = ds_new.drop('z_w_top').rename({'z_w': 'z_w_top'})
     return ds_new
 
