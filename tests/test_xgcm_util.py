@@ -21,6 +21,9 @@ def test_to_xgcm_grid_dataset(file):
     for coord in new_spatial_coords:
         assert coord in ds_new.coords
         assert coord not in ds.coords
+    old_spatial_coords = set(['nlat', 'nlon', 'z_w'])
+    for coord in old_spatial_coords:
+        assert coord not in ds_new.coords
 
 
 def test_to_xgcm_grid_dataset_missing_xgcm():
