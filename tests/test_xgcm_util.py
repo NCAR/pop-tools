@@ -17,10 +17,13 @@ def test_to_xgcm_grid_dataset(file):
     grid, ds_new = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)
     assert isinstance(grid, xgcm.Grid)
     assert set(['X', 'Y', 'Z']) == set(grid.axes.keys())
-    new_spatial_coords = set(['nlon_u', 'nlat_u', 'nlon_t', 'nlat_t'])
+    new_spatial_coords = ['nlon_u', 'nlat_u', 'nlon_t', 'nlat_t']
     for coord in new_spatial_coords:
         assert coord in ds_new.coords
         assert coord not in ds.coords
+    old_spatial_coords = ['nlat', 'nlon', 'z_w']
+    for coord in old_spatial_coords:
+        assert coord not in ds_new.coords
 
 
 def test_to_xgcm_grid_dataset_missing_xgcm():
