@@ -463,3 +463,128 @@ def _compute_corners(ULAT, ULONG):
     corner_lon[0, :, 3] = corner_lon[1, :, 3] - (corner_lon[2, :, 3] - corner_lon[1, :, 3])
 
     return corner_lat, corner_lon
+
+
+@jit(cache=True, nopython=True)
+def dzu_from_dzt(dzt):
+    var = dzt
+    dimz, dimy, dimx = dzt.shape
+    outvar = np.full_like(dzt, fill_value=0)
+
+    for k in np.arange(dimz):
+        for j in np.arange(dimy - 1):
+            for i in np.arange(dimx - 1):
+                outvar[k, j, i] = np.min(
+                    np.array(
+                        [var[k, j, i], var[k, j + 1, i], var[k, j, i + 1], var[k, j + 1, i + 1]]
+                    )
+                )
+
+    return outvar
+
+
+def four_point_min(array):
+
+    """
+    Utility function that calculates minimum at 4 surrounding points
+
+    Parameters
+    ----------
+    array: DataArray
+        A 2D or 3D DataArray
+
+    Returns
+    -------
+    dask.Array, np.ndarray
+    """
+
+    import dask
+    from scipy.ndimage import minimum_filter
+
+    zdims = [dim for dim in array.dims if 'z' in dim]
+    if len(zdims) > 1:
+        raise ValueError(f'Multiple z dimensions detected: {zdims}. Expected only one.')
+    elif len(zdims) == 1:
+        array = array.transpose(zdims[0], ...)
+
+    data = array.data
+    # window is 2 points in nlat & nlon (assumed to be last two dimensions)
+    # the "depth" passed to dask's map_overlap must be asymmetric. I don't understand this
+    if data.ndim == 2:
+        min_kwargs = dict(origin=(-1, -1), size=(2, 2), mode='nearest')
+        depth = {0: (0, 1), 1: (0, 1)}
+
+    else:
+        min_kwargs = dict(origin=(0, -1, -1), size=(1, 2, 2))
+        depth = {0: 0, 1: (0, 1), 2: (0, 1)}
+
+    if dask.is_dask_collection(data):
+        result = data.map_overlap(
+            minimum_filter, **min_kwargs, depth=depth, boundary='none', dtype=data.dtype
+        )
+    else:
+        result = minimum_filter(data, **min_kwargs)
+
+    return array.copy(data=result)
+
+
+def calc_dzu_dzt(grid):
+    """
+    Calculates DZT and DZU from a dataset containing dz, KMT and DZBC
+
+    .. warning::
+
+        This function does not do the right thing at the tripole grid seam.
+
+    Parameters
+    ----------
+    grid: Dataset
+        An xarray Dataset containing grid variables. This must contain partial bottom
+        cell information: KMT and DZBC.
+
+    Returns
+    -------
+    DZT, DZU: DataArray
+
+    Notes
+    -----
+    From Frank's zulip convo
+    https://zulip.cloud.ucar.edu/#narrow/stream/9-CGD-OCE/topic/pop-tools/near/2864
+
+        DZT[:,:,k] = dz[k] if k< KMT-1 # converting from Fortran to python indexing
+        DZT[i,j,KMT[i,j]-1] = DZBC[i,j]
+        DZU = min of 4 surrounding DZT
+
+    """
+
+    if not isinstance(grid, xr.Dataset):
+        raise ValueError(
+            f'Expected xarray Dataset with grid variables. Received {type(grid).__name__} instead.'
+        )
+    expected_vars = ['dz', 'KMT', 'DZBC']
+    missing_vars = set(expected_vars) - set(grid.variables)
+    if missing_vars:
+        raise ValueError(f'Variables {missing_vars} are missing in the provided dataset.')
+
+    dz = grid.dz
+    KMT = grid.KMT
+    KMU = grid.KMU  # four_point_min(KMT)
+    DZBC = grid.DZBC
+
+    # build a 1D DataArray of z-index value
+    fortran_zindex = dz.copy(data=np.arange(1, grid.sizes['z_t'] + 1))
+
+    # set values at KMT to DZBC, else, use existing nominal dz
+    dzt = xr.where(fortran_zindex == KMT, DZBC, dz)
+    dzt.name = 'DZT'
+
+    # now make dzu
+    dzu = four_point_min(dzt)
+
+    # In Fortran-like code, DZU is computed using a WORK variable that has DZT values.
+    # Then only values above KMU are modified, so we replicate that here
+    # so that we can run tests and users can check against existing code
+    dzu = xr.where(fortran_zindex >= KMU, dzt, dzu)
+    dzu.name = 'DZU'
+
+    return dzt, dzu
