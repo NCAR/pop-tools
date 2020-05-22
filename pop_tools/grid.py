@@ -14,19 +14,26 @@ except ImportError:
     tqdm = None
 
 
-INPUTDATA_DIR = ['~', '.pop_tools']
-
 # On Cheyenne/Casper and/or CGD machines, use local inputdata directory
 # See: https://github.com/NCAR/pop-tools/issues/24#issue-523701065
+# The name of the environment variable that can overwrite the path argument
+cesm_data_root_path = os.environ.get('CESMDATAROOT')
+
+if cesm_data_root_path is not None and os.path.exists(cesm_data_root_path):
+    inputdata = f'{cesm_data_root_path}/inputdata'
+    if os.path.exists(inputdata):
+        INPUTDATA_DIR = inputdata
+else:
+    # This is still the default in case the environment variable isn't defined
+    INPUTDATA_DIR = ['~', '.pop_tools']
+
 
 INPUTDATA = pooch.create(
-    # This is still the default in case the environment variable isn't defined
     path=INPUTDATA_DIR,
     version_dev='master',
     base_url='https://svn-ccsm-inputdata.cgd.ucar.edu/trunk/',
-    # The name of the environment variable that can overwrite the path argument
-    env='CESMDATAROOT',
 )
+
 
 INPUTDATA.load_registry(pkg_resources.resource_stream('pop_tools', 'inputdata_registry.txt'))
 
