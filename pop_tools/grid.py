@@ -8,12 +8,13 @@ import xarray as xr
 import yaml
 from numba import jit, prange
 
+from .datasets import fetch
+
 try:
     from tqdm import tqdm
 except ImportError:
     tqdm = None
 
-from .datasets import fetch
 
 # On Cheyenne/Casper and/or CGD machines, use local inputdata directory
 # See: https://github.com/NCAR/pop-tools/issues/24#issue-523701065

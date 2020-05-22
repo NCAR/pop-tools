@@ -12,22 +12,23 @@ DATASETS = pooch.create(
     path=['~', '.pop_tools', 'data'],
     version_dev='master',
     base_url='ftp://ftp.cgd.ucar.edu/archive/aletheia-data/cesm-data/ocn/',
-    env='POP_TOOLS_DATA_DIR'
+    env='POP_TOOLS_DATA_DIR',
 )
 DATASETS.load_registry(pkg_resources.resource_stream('pop_tools', 'data_registry.txt'))
 
+
 def fetch(pooch_instance, fname, processor=None, downloader=None):
-    
+
     """
-    This is a modified version of Pooch.fetch() method. This modification is necessary 
-    due to the fact that on Cheyenne/Casper path to the local data storage folder points 
-    to a folder (CESMDATAROOT: /glade/p/cesmdata/cseg), and this is not a location that 
-    we have perimissions to write to. 
-    
+    This is a modified version of Pooch.fetch() method. This modification is necessary
+    due to the fact that on Cheyenne/Casper path to the local data storage folder points
+    to a folder (CESMDATAROOT: /glade/p/cesmdata/cseg), and this is not a location that
+    we have perimissions to write to.
+
     Parameters
     ----------
-    pooch_instance : pooch.Pooch 
-        A Pooch instance to use. 
+    pooch_instance : pooch.Pooch
+        A Pooch instance to use.
     fname : str
         The file name (relative to the *base_url* of the remote data
         storage) to fetch from the local storage.
@@ -55,10 +56,8 @@ def fetch(pooch_instance, fname, processor=None, downloader=None):
     abspath = str(pooch_instance.abspath)
     action, verb = pooch.core.download_action(full_path, known_hash)
 
-    if action in ("download", "update"):
-        pooch.utils.get_logger().info(
-                "%s file '%s' from '%s' to '%s'.", verb, fname, url, abspath,
-            )
+    if action in ('download', 'update'):
+        pooch.utils.get_logger().info("%s file '%s' from '%s' to '%s'.", verb, fname, url, abspath)
         if downloader is None:
             downloader = pooch.downloaders.choose_downloader(url)
 
@@ -68,7 +67,7 @@ def fetch(pooch_instance, fname, processor=None, downloader=None):
         return processor(str(full_path), action, pooch_instance)
 
     return str(full_path)
-    
+
 
 class UnzipZarr(pooch.processors.Unzip):
     """
