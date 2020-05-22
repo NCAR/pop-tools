@@ -20,9 +20,7 @@ except ImportError:
 cesm_data_root_path = os.environ.get('CESMDATAROOT')
 
 if cesm_data_root_path is not None and os.path.exists(cesm_data_root_path):
-    inputdata = f'{cesm_data_root_path}/inputdata'
-    if os.path.exists(inputdata):
-        INPUTDATA_DIR = inputdata
+    INPUTDATA_DIR = cesm_data_root_path
 else:
     # This is still the default in case the environment variable isn't defined
     INPUTDATA_DIR = ['~', '.pop_tools']
