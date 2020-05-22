@@ -13,6 +13,7 @@ try:
 except ImportError:
     tqdm = None
 
+from .datasets import fetch
 
 # On Cheyenne/Casper and/or CGD machines, use local inputdata directory
 # See: https://github.com/NCAR/pop-tools/issues/24#issue-523701065
@@ -39,6 +40,7 @@ if tqdm is not None:
     downloader = pooch.HTTPDownloader(progressbar=True, verify=False, allow_redirects=True)
 else:
     downloader = pooch.HTTPDownloader(verify=False, allow_redirects=True)
+
 
 grid_def_file = pkg_resources.resource_filename('pop_tools', 'pop_grid_definitions.yaml')
 input_templates_dir = pkg_resources.resource_filename('pop_tools', 'input_templates')
@@ -78,7 +80,7 @@ def get_grid(grid_name, scrip=False):
     nlon = grid_attrs['lateral_dims'][1]
 
     # read horizontal grid
-    horiz_grid_fname = INPUTDATA.fetch(grid_attrs['horiz_grid_fname'], downloader=downloader)
+    horiz_grid_fname = fetch(INPUTDATA, grid_attrs['horiz_grid_fname'], downloader=downloader)
     grid_file_data = np.fromfile(horiz_grid_fname, dtype='>f8', count=-1)
     grid_file_data = grid_file_data.reshape((7, nlat, nlon))
 
@@ -129,7 +131,7 @@ def get_grid(grid_name, scrip=False):
     z_t = depth_edges[0:-1] + 0.5 * dz
 
     # read KMT
-    topography_fname = INPUTDATA.fetch(grid_attrs['topography_fname'], downloader=downloader)
+    topography_fname = fetch(INPUTDATA, grid_attrs['topography_fname'], downloader=downloader)
     kmt_flat = np.fromfile(topography_fname, dtype='>i4', count=-1)
     assert kmt_flat.shape[0] == (
         nlat * nlon
@@ -138,7 +140,7 @@ def get_grid(grid_name, scrip=False):
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # read REGION_MASK
-    region_mask_fname = INPUTDATA.fetch(grid_attrs['region_mask_fname'], downloader=downloader)
+    region_mask_fname = fetch(INPUTDATA, grid_attrs['region_mask_fname'], downloader=downloader)
     region_mask_flat = np.fromfile(region_mask_fname, dtype='>i4', count=-1)
     assert region_mask_flat.shape[0] == (
         nlat * nlon
