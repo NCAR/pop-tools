@@ -23,7 +23,7 @@ def fetch(pooch_instance, fname, processor=None, downloader=None):
     This is a modified version of Pooch.fetch() method. This modification is necessary
     due to the fact that on Cheyenne/Casper path to the local data storage folder points
     to a folder (CESMDATAROOT: /glade/p/cesmdata/cseg), and this is not a location that
-    we have perimissions to write to.
+    we have permissions to write to.
 
     Parameters
     ----------
