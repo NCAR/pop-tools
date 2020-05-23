@@ -1,5 +1,6 @@
 import os
 
+import pytest
 import xarray as xr
 
 import pop_tools
@@ -8,18 +9,12 @@ from pop_tools import DATASETS
 from .util import ds_compare
 
 
-def test_template():
-    print(pop_tools.grid_defs)
-
-
-def test_get_grid():
-    for grid in pop_tools.grid_defs.keys():
-        print('-' * 80)
-        print(grid)
-        ds = pop_tools.get_grid(grid)
-        ds.info()
-        assert isinstance(ds, xr.Dataset)
-        print()
+@pytest.mark.parametrize('grid', pop_tools.grid_defs.keys())
+def test_get_grid(grid):
+    print(grid)
+    ds = pop_tools.get_grid(grid)
+    ds.info()
+    assert isinstance(ds, xr.Dataset)
 
 
 def test_get_grid_scrip():
