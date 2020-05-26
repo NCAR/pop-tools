@@ -8,8 +8,6 @@ import xarray as xr
 import yaml
 from numba import jit, prange
 
-from .datasets import fetch
-
 try:
     from tqdm import tqdm
 except ImportError:
@@ -50,6 +48,62 @@ with open(grid_def_file) as f:
     grid_defs = yaml.safe_load(f)
 
 
+def fetch(self, fname, processor=None, downloader=None):
+
+    """
+    This is a modified version of Pooch.fetch() method. This modification is necessary
+    due to the fact that on Cheyenne/Casper path to the local data storage folder points
+    to a folder (CESMDATAROOT: /glade/p/cesmdata/cseg), and this is not a location that
+    we have permissions to write to.
+
+    Parameters
+    ----------
+    fname : str
+        The file name (relative to the *base_url* of the remote data
+        storage) to fetch from the local storage.
+    processor : None or callable
+        If not None, then a function (or callable object) that will be
+        called before returning the full path and after the file has been
+        downloaded (if required).
+    downloader : None or callable
+        If not None, then a function (or callable object) that will be
+        called to download a given URL to a provided local file name. By
+        default, downloads are done through HTTP without authentication
+        using :class:`pooch.HTTPDownloader`.
+    Returns
+    -------
+    full_path : str
+        The absolute path (including the file name) of the file in the
+        local storage.
+
+    """
+
+    self._assert_file_in_registry(fname)
+    url = self.get_url(fname)
+    full_path = self.abspath / fname
+    known_hash = self.registry[fname]
+    abspath = str(self.abspath)
+    action, verb = pooch.core.download_action(full_path, known_hash)
+
+    if action in ('download', 'update'):
+        pooch.utils.get_logger().info("%s file '%s' from '%s' to '%s'.", verb, fname, url, abspath)
+        if downloader is None:
+            downloader = pooch.downloaders.choose_downloader(url)
+
+        pooch.core.stream_download(url, full_path, known_hash, downloader, pooch=self)
+
+    if processor is not None:
+        return processor(str(full_path), action, self)
+
+    return str(full_path)
+
+
+# Override fetch method at instance level
+# Reference: https://stackoverflow.com/a/46757134/7137180
+# Replace fetch() with modified fetch() for this object only
+INPUTDATA.fetch = fetch.__get__(INPUTDATA, pooch.Pooch)
+
+
 def get_grid(grid_name, scrip=False):
     """Return a xarray.Dataset() with POP grid variables.
 
@@ -81,7 +135,7 @@ def get_grid(grid_name, scrip=False):
     nlon = grid_attrs['lateral_dims'][1]
 
     # read horizontal grid
-    horiz_grid_fname = fetch(INPUTDATA, grid_attrs['horiz_grid_fname'], downloader=downloader)
+    horiz_grid_fname = INPUTDATA.fetch(grid_attrs['horiz_grid_fname'], downloader=downloader)
     grid_file_data = np.fromfile(horiz_grid_fname, dtype='>f8', count=-1)
     grid_file_data = grid_file_data.reshape((7, nlat, nlon))
 
@@ -132,7 +186,7 @@ def get_grid(grid_name, scrip=False):
     z_t = depth_edges[0:-1] + 0.5 * dz
 
     # read KMT
-    topography_fname = fetch(INPUTDATA, grid_attrs['topography_fname'], downloader=downloader)
+    topography_fname = INPUTDATA.fetch(grid_attrs['topography_fname'], downloader=downloader)
     kmt_flat = np.fromfile(topography_fname, dtype='>i4', count=-1)
     assert kmt_flat.shape[0] == (
         nlat * nlon
@@ -141,7 +195,7 @@ def get_grid(grid_name, scrip=False):
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # read REGION_MASK
-    region_mask_fname = fetch(INPUTDATA, grid_attrs['region_mask_fname'], downloader=downloader)
+    region_mask_fname = INPUTDATA.fetch(grid_attrs['region_mask_fname'], downloader=downloader)
     region_mask_flat = np.fromfile(region_mask_fname, dtype='>i4', count=-1)
     assert region_mask_flat.shape[0] == (
         nlat * nlon

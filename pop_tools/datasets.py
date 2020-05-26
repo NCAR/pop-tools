@@ -17,58 +17,6 @@ DATASETS = pooch.create(
 DATASETS.load_registry(pkg_resources.resource_stream('pop_tools', 'data_registry.txt'))
 
 
-def fetch(pooch_instance, fname, processor=None, downloader=None):
-
-    """
-    This is a modified version of Pooch.fetch() method. This modification is necessary
-    due to the fact that on Cheyenne/Casper path to the local data storage folder points
-    to a folder (CESMDATAROOT: /glade/p/cesmdata/cseg), and this is not a location that
-    we have permissions to write to.
-
-    Parameters
-    ----------
-    pooch_instance : pooch.Pooch
-        A Pooch instance to use.
-    fname : str
-        The file name (relative to the *base_url* of the remote data
-        storage) to fetch from the local storage.
-    processor : None or callable
-        If not None, then a function (or callable object) that will be
-        called before returning the full path and after the file has been
-        downloaded (if required).
-    downloader : None or callable
-        If not None, then a function (or callable object) that will be
-        called to download a given URL to a provided local file name. By
-        default, downloads are done through HTTP without authentication
-        using :class:`pooch.HTTPDownloader`.
-    Returns
-    -------
-    full_path : str
-        The absolute path (including the file name) of the file in the
-        local storage.
-
-    """
-
-    pooch_instance._assert_file_in_registry(fname)
-    url = pooch_instance.get_url(fname)
-    full_path = pooch_instance.abspath / fname
-    known_hash = pooch_instance.registry[fname]
-    abspath = str(pooch_instance.abspath)
-    action, verb = pooch.core.download_action(full_path, known_hash)
-
-    if action in ('download', 'update'):
-        pooch.utils.get_logger().info("%s file '%s' from '%s' to '%s'.", verb, fname, url, abspath)
-        if downloader is None:
-            downloader = pooch.downloaders.choose_downloader(url)
-
-        pooch.core.stream_download(url, full_path, known_hash, downloader, pooch=pooch_instance)
-
-    if processor is not None:
-        return processor(str(full_path), action, pooch_instance)
-
-    return str(full_path)
-
-
 class UnzipZarr(pooch.processors.Unzip):
     """
     Processor that unpacks a zarr store zip archive and
