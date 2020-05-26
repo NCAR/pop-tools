@@ -1,8 +1,19 @@
 import os
+import re
+import socket
 
 import numpy as np
 import pytest
 import xarray as xr
+
+
+def is_ncar_host():
+    """Determine if host is an NCAR machine."""
+    hostname = socket.getfqdn()
+
+    return any(
+        [re.compile(ncar_host).search(hostname) for ncar_host in ['cheyenne', 'casper', 'hobart']]
+    )
 
 
 def ds_compare(ds1, ds2, assertion='allequal', rtol=1e-5, atol=1e-8):
