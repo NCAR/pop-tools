@@ -133,10 +133,7 @@ def get_grid(grid_name, scrip=False):
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # derive KMU
-    KMU = np.zeros_like(KMT)
-    for i in range(KMT.shape[0]):
-        for j in range(KMT.shape[1]):
-            KMU[i, j] = min(KMT[i, j], KMT[i - 1, j], KMT[i, j - 1], KMT[i - 1, j - 1])
+    KMU = _generate_KMU(KMT)
 
     # read REGION_MASK
     region_mask_fname = INPUTDATA.fetch(grid_attrs['region_mask_fname'], downloader=downloader)
@@ -362,6 +359,16 @@ def get_grid(grid_name, scrip=False):
     dso.attrs = grid_attrs
 
     return dso
+
+
+@jit(nopython=True, parallel=True)
+def _generate_KMU(KMT):
+    """Computes KMU from KMT."""
+    KMU = np.zeros_like(KMT)
+    for i in prange(KMT.shape[0]):
+        for j in prange(KMT.shape[1]):
+            KMU[i, j] = min(KMT[i, j], KMT[i - 1, j], KMT[i, j - 1], KMT[i - 1, j - 1])
+    return KMU
 
 
 @jit(nopython=True, parallel=True)
