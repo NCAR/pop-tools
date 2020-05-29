@@ -132,6 +132,12 @@ def get_grid(grid_name, scrip=False):
     assert kmt_flat.max() <= len(z_t), 'Max KMT > length z_t'
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
+    # derive KMU
+    KMU = np.zeros_like(KMT)
+    for i in range(KMT.shape[0]):
+        for j in range(KMT.shape[1]):
+            KMU[i, j] = min(KMT[i, j], KMT[i - 1, j], KMT[i, j - 1], KMT[i - 1, j - 1])
+
     # read REGION_MASK
     region_mask_fname = INPUTDATA.fetch(grid_attrs['region_mask_fname'], downloader=downloader)
     region_mask_flat = np.fromfile(region_mask_fname, dtype='>i4', count=-1)
@@ -139,6 +145,15 @@ def get_grid(grid_name, scrip=False):
         nlat * nlon
     ), f'unexpected dims in region_mask file: {grid_attrs["region_mask_fname"]}'
     REGION_MASK = region_mask_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
+
+    # derive depth of columns of ocean T-points and U-points
+    KMT_reidx = KMT - 1
+    KMT_reidx[KMT_reidx == -1] = 0
+    HT = z_w[KMT_reidx]
+
+    KMU_reidx = KMU - 1
+    KMU_reidx[KMU_reidx == -1] = 0
+    HU = z_w[KMU_reidx]
 
     # output dataset
     dso = xr.Dataset()
@@ -264,6 +279,35 @@ def get_grid(grid_name, scrip=False):
             attrs={
                 'long_name': 'k Index of Deepest Grid Cell on T Grid',
                 'coordinates': 'TLONG TLAT',
+            },
+        )
+
+        dso['KMU'] = xr.DataArray(
+            KMU,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'long_name': 'k Index of Deepest Grid Cell on U Grid',
+                'coordinates': 'ULONG ULAT',
+            },
+        )
+
+        dso['HT'] = xr.DataArray(
+            HT,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'units': 'cm',
+                'long_name': 'depth of ocean column on T grid',
+                'coordinates': 'TLONG TLAT',
+            },
+        )
+
+        dso['HU'] = xr.DataArray(
+            HU,
+            dims=('nlat', 'nlon'),
+            attrs={
+                'units': 'cm',
+                'long_name': 'depth of ocean column on U grid',
+                'coordinates': 'ULONG ULAT',
             },
         )
 
