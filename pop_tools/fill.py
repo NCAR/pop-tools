@@ -27,11 +27,12 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4,
       to `tol * var`; i.e. `delta <= tol * np.abs(var[j, i])`.
 
     use_sor: boolean, optional [default=False]
-      switch to select SOR fill algorithm
+      switch to select SOR fill algorithm over progressive fill algorithm
 
     rc : float, optional [default=1.8, valid bounds=(1.0,2.0)]
        over-relaxation coefficient to use in SOR fill algorithm. Larger arrrays
-       typically converge faster with larger coefficients.
+       typically converge faster with larger coefficients. For 1 deg. grid (360x180)
+       a coefficient in the range 1.85-1.9 is near optimal.
 
     max_iter : integer, optional, [default=1000]
        maximum number of iterations to do before giving up if tol is not reached.
@@ -42,7 +43,6 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4,
       DataArray with NaNs filled by iterative smoothing.
 
     """
-    print("IN FOB fill version")
 
     dims_in = da_in.dims
     non_lateral_dims = dims_in[:-2]
@@ -78,38 +78,39 @@ def lateral_fill(da_in, isvalid_mask, ltripole=False, tol=1.0e-4,
 
 
 def lateral_fill_np_array(var, isvalid_mask, ltripole=False, tol=1.0e-4,
-                          use_sor=False, rc=1.6, max_iter=1000):
+                          use_sor=False, rc=1.8, max_iter=1000):
 
     """Perform lateral fill on numpy.array
 
-    Parameters
+    Parameters [NB defaults set redundantly with lateral_fill above to allow this
+                function to be called directly for numpy arrays]
     ----------
 
     var : numpy.array
       Array on which to fill NaNs. Fill is performed on the two
       rightmost dimenions. Grid is assumed periodic in `x` direction
-      (last dimension).
+      (last dimension). Only NaNs where isvalid_mask is True will be filled.
 
     isvalid_mask : numpy.array, boolean
       Valid values mask: `True` where data should be filled. Must have the
       same rightmost dimenions as `da_in`.
 
-    ltripole : boolean, optional [default=False]
+    ltripole : boolean, optional [default=False set in lateral_fill]
       Logical flag; if `True` then treat the top row of the grid as periodic
       in the sense of a tripole grid.
 
-    tol : float, optional [default=1.0e-4]
+    tol : float, optional [default=1.0e-4 set in lateral_fill]
       Convergence criteria: stop filling when values change is less or equal
       to `tol * var`; i.e. `delta <= tol * np.abs(var[j, i])`.
 
-    use_sor: boolean, optional [default=False]
+    use_sor: boolean, optional [default=False set in lateral_fill]
       switch to select SOR fill algorithm
 
-    rc : float, optional [default=1.8, valid bounds=(1.0,2.0)]
+    rc : float, optional [default=1.8, valid bounds=(1.0,2.0) set in lateral_fill]
        over-relaxation coefficient to use in SOR fill algorithm. Larger arrrays
        typically converge faster with larger coefficients.
 
-    max_iter : integer, optional, [default=1000]
+    max_iter : integer, optional, [default=1000 set in lateral_fill]
        maximum number of iterations to do before giving up if tol is not reached.
 
     Returns
@@ -119,19 +120,23 @@ def lateral_fill_np_array(var, isvalid_mask, ltripole=False, tol=1.0e-4,
       DataArray with NaNs filled by iterative smoothing.
 
     """
-    fillmask = np.isnan(var) & isvalid_mask
+    assert var.ndim == 2, f'lateral_fill_np_array expects 2D array, but got {var.ndim}: {var.shape}'
+
     nlat, nlon = var.shape[-2:]
-    missing_value = 1e36
 
     var = var.copy()
 
     if use_sor :
+        fillmask = np.isnan(var)  # Fill all NaNs
+        keepNaNs = ~isvalid_mask & np.isnan(var)
         _iterative_fill_sor(nlat, nlon, var, fillmask, tol, rc, max_iter, ltripole)
+        var[keepNaNs] = np.nan    # Replace NaNs in areas not designated for filling
     else :
+        fillmask = np.isnan(var) & isvalid_mask
+        missing_value = 1e36
         var[np.isnan(var)] = missing_value
         _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole)
-
-    var[var == missing_value] = np.nan
+        var[var == missing_value] = np.nan
 
     return var
 
@@ -143,7 +148,7 @@ def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltri
     done = False
     iter = 0
 
-    work = np.empty((nlat, nlon))
+    work = np.empty_like(var)
 
     while not done:
         done = True
@@ -185,8 +190,8 @@ def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltri
                 else:
                     # assume only tripole has non-land top row
                     if ltripole:
-                        if var[j, nlon - i] != missing_value:
-                            numer += var[j, nlon - i]
+                        if var[j, nlon - 1 - i] != missing_value:
+                            numer += var[j, nlon - 1 - i]
                             denom += 1.0
 
                 # West
@@ -220,10 +225,7 @@ def _iterative_fill_sor(nlat, nlon, var, fillmask, tol=5.0e-4,
             rc=1.6, max_iter=100, ltripole=False):
     """Iterative land fill algorithm via SOR solution of Laplace Equation."""
 
-
     # Compute a zonal mean to use as a first guess
-    # zonavg = np.ma.mean(np.ma.masked(var,mask=fillmask),axis=1)
-    # zoncnt = np.ma.count(np.ma.masked(var,mask=fillmask),axis=1)
     # Apprarently jit doesn't like masked arrays so loop it out
     zoncnt = np.zeros(nlat)
     zonavg = np.zeros(nlat)
@@ -298,7 +300,5 @@ def _iterative_fill_sor(nlat, nlon, var, fillmask, tol=5.0e-4,
                         var[j,i] = var[j,i] + rc*0.5*res[j,i]
 
 
-        res_max = np.max(np.abs(res))
+        res_max = np.max(np.fabs(res))/np.max(np.fabs(var))
         iter += 1
-        
-    return (iter,res_max)
