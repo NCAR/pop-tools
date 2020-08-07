@@ -46,7 +46,6 @@ def lateral_fill(
       DataArray with NaNs filled by iterative smoothing.
 
     """
-
     dims_in = da_in.dims
     non_lateral_dims = dims_in[:-2]
 
@@ -129,6 +128,7 @@ def lateral_fill_np_array(
       DataArray with NaNs filled by iterative smoothing.
 
     """
+
     assert var.ndim == 2, f'lateral_fill_np_array expects 2D array, but got {var.ndim}: {var.shape}'
 
     nlat, nlon = var.shape[-2:]
@@ -142,18 +142,13 @@ def lateral_fill_np_array(
         var[keepNaNs] = np.nan  # Replace NaNs in areas not designated for filling
     else:
         fillmask = np.isnan(var) & isvalid_mask
-        missing_value = 1.0e10
-        var[np.isnan(var)] = missing_value
-        _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter)
-        var[var == missing_value] = np.nan
+        _iterative_fill_POP_core(nlat, nlon, var, fillmask, tol, ltripole, max_iter)
 
     return var
 
 
-@jit(nopython=True)
-def _iterative_fill_POP_core(
-    nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter=10000
-):
+@jit(nopython=True, parallel=True)
+def _iterative_fill_POP_core(nlat, nlon, var, fillmask, tol, ltripole, max_iter):
     """Iterative smoothing algorithm."""
 
     done = False
@@ -184,41 +179,41 @@ def _iterative_fill_POP_core(
                 denom = 0.0
 
                 # East
-                if var[j, ip1] != missing_value:
+                if np.isfinite(var[j, ip1]):
                     numer += var[j, ip1]
                     denom += 1.0
 
                 # North
                 if j < nlat - 1:
-                    if var[jp1, i] != missing_value:
+                    if np.isfinite(var[jp1, i]):
                         numer += var[jp1, i]
                         denom += 1.0
 
                 else:
                     # assume only tripole has non-land top row
                     if ltripole:
-                        if var[j, nlon - 1 - i] != missing_value:
+                        if np.isfinite(var[j, nlon - 1 - i]):
                             numer += var[j, nlon - 1 - i]
                             denom += 1.0
 
                 # West
-                if var[j, im1] != missing_value:
+                if np.isfinite(var[j, im1]):
                     numer += var[j, im1]
                     denom += 1.0
 
                 # South
-                if var[jm1, i] != missing_value:
+                if np.isfinite(var[jm1, i]):
                     numer += var[jm1, i]
                     denom += 1.0
 
                 # self
-                if var[j, i] != missing_value:
+                if np.isfinite(var[j, i]):
                     numer += denom * var[j, i]
                     denom *= 2.0
 
                 if denom > 0.0:
                     work[j, i] = numer / denom
-                    if var[j, i] == missing_value:
+                    if np.isnan(var[j, i]):
                         done = False
                     else:
                         delta = np.fabs(var[j, i] - work[j, i])
@@ -228,17 +223,15 @@ def _iterative_fill_POP_core(
         var[1:nlat, :] = work[1:nlat, :]
         if iter_cnt > max_iter:
             done = True
-    print('iter_cnt=', iter_cnt)
 
 
-@jit(nopython=True)
-def _iterative_fill_sor(
-    nlat, nlon, var, fillmask, tol=5.0e-4, rc=1.6, max_iter=10000, ltripole=False
-):
+@jit(nopython=True, parallel=True)
+def _iterative_fill_sor(nlat, nlon, var, fillmask, tol, rc, max_iter, ltripole):
     """Iterative land fill algorithm via SOR solution of Laplace Equation."""
 
     # Compute a zonal mean to use as a first guess
     # Apprarently jit doesn't like masked arrays so loop it out
+
     zoncnt = np.zeros(nlat)
     zonavg = np.zeros(nlat)
     for j in range(0, nlat):
@@ -252,11 +245,10 @@ def _iterative_fill_sor(
         if zoncnt[j] > 0 and zoncnt[j + 1] == 0:
             zoncnt[j + 1] = 1
             zonavg[j + 1] = zonavg[j]
-    for j in range(0, nlat - 1):  # southward pass
-        jrev = nlat - 1 - j
-        if zoncnt[jrev] > 0 and zoncnt[jrev - 1] == 0:
-            zoncnt[jrev - 1] = 1
-            zonavg[jrev - 1] = zonavg[jrev]
+    for j in range(nlat - 1, 0, -1):  # southward pass
+        if zoncnt[j] > 0 and zoncnt[j - 1] == 0:
+            zoncnt[j - 1] = 1
+            zonavg[j - 1] = zonavg[j]
 
     # Replace the input array missing values with zonal average as first guess
     for j in range(0, nlat):
@@ -311,4 +303,3 @@ def _iterative_fill_sor(
 
         res_max = np.max(np.fabs(res)) / np.max(np.fabs(var))
         iter_cnt += 1
-    print('iter_cnt=', iter_cnt)
