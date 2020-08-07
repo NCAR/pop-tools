@@ -31,10 +31,10 @@ def lateral_fill(
       switch to select SOR fill algorithm over progressive fill algorithm
 
     rc : float, optional [default=1.8, valid bounds=(1.0,2.0)]
-       over-relaxation coefficient to use in SOR fill algorithm. 
-       Larger arrrays (or extent of region to be filled if not global) 
-       typically converge faster with larger coefficients. 
-       For completely land-filling a 1 deg. grid (360x180) a coefficient in 
+       over-relaxation coefficient to use in SOR fill algorithm.
+       Larger arrrays (or extent of region to be filled if not global)
+       typically converge faster with larger coefficients.
+       For completely land-filling a 1 deg. grid (360x180) a coefficient in
        the range 1.85-1.9 is near optimal.
 
     max_iter : integer, optional, [default=10000]
@@ -113,10 +113,10 @@ def lateral_fill_np_array(
       switch to select SOR fill algorithm
 
     rc : float, optional [default=1.8, valid bounds=(1.0,2.0)]
-       over-relaxation coefficient to use in SOR fill algorithm. 
-       Larger arrrays (or extent of region to be filled if not global) 
-       typically converge faster with larger coefficients. 
-       For completely land-filling a 1 deg. grid (360x180) a coefficient in 
+       over-relaxation coefficient to use in SOR fill algorithm.
+       Larger arrrays (or extent of region to be filled if not global)
+       typically converge faster with larger coefficients.
+       For completely land-filling a 1 deg. grid (360x180) a coefficient in
        the range 1.85-1.9 is near optimal.
 
     max_iter : integer, optional, [default=10000 set in lateral_fill]
@@ -142,7 +142,7 @@ def lateral_fill_np_array(
         var[keepNaNs] = np.nan  # Replace NaNs in areas not designated for filling
     else:
         fillmask = np.isnan(var) & isvalid_mask
-        missing_value = 1.e10
+        missing_value = 1.0e10
         var[np.isnan(var)] = missing_value
         _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter)
         var[var == missing_value] = np.nan
@@ -151,7 +151,9 @@ def lateral_fill_np_array(
 
 
 @jit(nopython=True)
-def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter=10000):
+def _iterative_fill_POP_core(
+    nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter=10000
+):
     """Iterative smoothing algorithm."""
 
     done = False
@@ -170,8 +172,8 @@ def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltri
 
             for i in range(0, nlon):
                 # assume periodic in x
-                im1 = (i - 1)%nlon
-                ip1 = (i + 1)%nlon
+                im1 = (i - 1) % nlon
+                ip1 = (i + 1) % nlon
 
                 work[j, i] = var[j, i]
 
@@ -224,8 +226,9 @@ def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltri
                             done = False
 
         var[1:nlat, :] = work[1:nlat, :]
-        if iter_cnt > max_iter  : done = True
-    print('iter_cnt=',iter_cnt)
+        if iter_cnt > max_iter:
+            done = True
+    print('iter_cnt=', iter_cnt)
 
 
 @jit(nopython=True)
@@ -276,8 +279,8 @@ def _iterative_fill_sor(
 
             for i in range(0, nlon):
                 if fillmask[j, i]:
-                    im1 = (i - 1)%nlon # assume periodic in x
-                    ip1 = (i + 1)%nlon
+                    im1 = (i - 1) % nlon  # assume periodic in x
+                    ip1 = (i + 1) % nlon
 
                     # this is SOR
                     res[j, i] = (
@@ -293,8 +296,8 @@ def _iterative_fill_sor(
             jp1 = j
             for i in range(0, nlon):
                 if fillmask[j, i]:
-                    im1 = (i - 1)%nlon
-                    ip1 = (i + 1)%nlon
+                    im1 = (i - 1) % nlon
+                    ip1 = (i + 1) % nlon
                     io = nlon - 1 - i  # tripole b.c
 
                     if ltripole:  # use cross-pole periodicity
@@ -308,4 +311,4 @@ def _iterative_fill_sor(
 
         res_max = np.max(np.fabs(res)) / np.max(np.fabs(var))
         iter_cnt += 1
-    print('iter_cnt=',iter_cnt)
+    print('iter_cnt=', iter_cnt)
