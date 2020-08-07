@@ -4,7 +4,7 @@ from numba import jit
 
 
 def lateral_fill(
-    da_in, isvalid_mask, ltripole=False, tol=1.0e-4, use_sor=False, rc=1.8, max_iter=1000
+    da_in, isvalid_mask, ltripole=False, tol=1.0e-4, use_sor=False, rc=1.8, max_iter=10000
 ):
     """Perform lateral fill on xarray.DataArray
 
@@ -31,11 +31,13 @@ def lateral_fill(
       switch to select SOR fill algorithm over progressive fill algorithm
 
     rc : float, optional [default=1.8, valid bounds=(1.0,2.0)]
-       over-relaxation coefficient to use in SOR fill algorithm. Larger arrrays
-       typically converge faster with larger coefficients. For 1 deg. grid (360x180)
-       a coefficient in the range 1.85-1.9 is near optimal.
+       over-relaxation coefficient to use in SOR fill algorithm. 
+       Larger arrrays (or extent of region to be filled if not global) 
+       typically converge faster with larger coefficients. 
+       For completely land-filling a 1 deg. grid (360x180) a coefficient in 
+       the range 1.85-1.9 is near optimal.
 
-    max_iter : integer, optional, [default=1000]
+    max_iter : integer, optional, [default=10000]
        maximum number of iterations to do before giving up if tol is not reached.
 
     Returns
@@ -81,7 +83,7 @@ def lateral_fill(
 
 
 def lateral_fill_np_array(
-    var, isvalid_mask, ltripole=False, tol=1.0e-4, use_sor=False, rc=1.8, max_iter=1000
+    var, isvalid_mask, ltripole=False, tol=1.0e-4, use_sor=False, rc=1.8, max_iter=10000
 ):
 
     """Perform lateral fill on numpy.array
@@ -110,11 +112,14 @@ def lateral_fill_np_array(
     use_sor: boolean, optional [default=False set in lateral_fill]
       switch to select SOR fill algorithm
 
-    rc : float, optional [default=1.8, valid bounds=(1.0,2.0) set in lateral_fill]
-       over-relaxation coefficient to use in SOR fill algorithm. Larger arrrays
-       typically converge faster with larger coefficients.
+    rc : float, optional [default=1.8, valid bounds=(1.0,2.0)]
+       over-relaxation coefficient to use in SOR fill algorithm. 
+       Larger arrrays (or extent of region to be filled if not global) 
+       typically converge faster with larger coefficients. 
+       For completely land-filling a 1 deg. grid (360x180) a coefficient in 
+       the range 1.85-1.9 is near optimal.
 
-    max_iter : integer, optional, [default=1000 set in lateral_fill]
+    max_iter : integer, optional, [default=10000 set in lateral_fill]
        maximum number of iterations to do before giving up if tol is not reached.
 
     Returns
@@ -137,26 +142,26 @@ def lateral_fill_np_array(
         var[keepNaNs] = np.nan  # Replace NaNs in areas not designated for filling
     else:
         fillmask = np.isnan(var) & isvalid_mask
-        missing_value = 1e36
+        missing_value = 1.e10
         var[np.isnan(var)] = missing_value
-        _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole)
+        _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter)
         var[var == missing_value] = np.nan
 
     return var
 
 
 @jit(nopython=True)
-def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole):
+def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltripole, max_iter=10000):
     """Iterative smoothing algorithm."""
 
     done = False
-    iter = 0
+    iter_cnt = 0
 
     work = np.empty_like(var)
 
     while not done:
         done = True
-        iter += 1
+        iter_cnt += 1
 
         # assume bottom row is land, so skip it
         for j in range(1, nlat):
@@ -165,12 +170,8 @@ def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltri
 
             for i in range(0, nlon):
                 # assume periodic in x
-                im1 = i - 1
-                if i == 0:
-                    im1 = nlon - 1
-                ip1 = i + 1
-                if i == nlon - 1:
-                    ip1 = 0
+                im1 = (i - 1)%nlon
+                ip1 = (i + 1)%nlon
 
                 work[j, i] = var[j, i]
 
@@ -223,11 +224,13 @@ def _iterative_fill_POP_core(nlat, nlon, var, fillmask, missing_value, tol, ltri
                             done = False
 
         var[1:nlat, :] = work[1:nlat, :]
+        if iter_cnt > max_iter  : done = True
+    print('iter_cnt=',iter_cnt)
 
 
 @jit(nopython=True)
 def _iterative_fill_sor(
-    nlat, nlon, var, fillmask, tol=5.0e-4, rc=1.6, max_iter=100, ltripole=False
+    nlat, nlon, var, fillmask, tol=5.0e-4, rc=1.6, max_iter=10000, ltripole=False
 ):
     """Iterative land fill algorithm via SOR solution of Laplace Equation."""
 
@@ -261,9 +264,9 @@ def _iterative_fill_sor(
     # Now do the iterative 2D fill
     res = np.zeros((nlat, nlon))  # work array hold residuals
     res_max = tol
-    iter = 0
-    while iter < max_iter and res_max >= tol:
-        res = res * 0.0  # reset the residual to zero for this iteration
+    iter_cnt = 0
+    while iter_cnt < max_iter and res_max >= tol:
+        res[:] = 0.0  # reset the residual to zero for this iteration
 
         # assume bottom row is all land, leave it set to zonal average
         # deal with top row separately below
@@ -273,12 +276,8 @@ def _iterative_fill_sor(
 
             for i in range(0, nlon):
                 if fillmask[j, i]:
-                    im1 = i - 1
-                    if i == 0:  # assume periodic in x
-                        im1 = nlon - 1
-                    ip1 = i + 1
-                    if i == nlon - 1:
-                        ip1 = 0
+                    im1 = (i - 1)%nlon # assume periodic in x
+                    ip1 = (i + 1)%nlon
 
                     # this is SOR
                     res[j, i] = (
@@ -294,13 +293,9 @@ def _iterative_fill_sor(
             jp1 = j
             for i in range(0, nlon):
                 if fillmask[j, i]:
-                    im1 = i - 1
-                    if i == 0:
-                        im1 = nlon - 1
-                    ip1 = i + 1
-                    if i == nlon - 1:
-                        ip1 = 0
-                    io = nlon - 1 - i
+                    im1 = (i - 1)%nlon
+                    ip1 = (i + 1)%nlon
+                    io = nlon - 1 - i  # tripole b.c
 
                     if ltripole:  # use cross-pole periodicity
                         res[j, i] = (
@@ -312,4 +307,5 @@ def _iterative_fill_sor(
                         var[j, i] = var[j, i] + rc * 0.5 * res[j, i]
 
         res_max = np.max(np.fabs(res)) / np.max(np.fabs(var))
-        iter += 1
+        iter_cnt += 1
+    print('iter_cnt=',iter_cnt)
