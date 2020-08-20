@@ -59,7 +59,7 @@ def test_lateral_fill_np_array_ltripole():
     z_fill = pop_tools.lateral_fill_np_array(z_miss, valid_points, ltripole=True)
 
     # load reference data
-    ref_data_file = DATASETS.fetch('lateral_fill_np_array_tripole_filled_ref.npz')
+    ref_data_file = DATASETS.fetch('lateral_fill_np_array_tripole_filled_ref.20200818.npz')
     with np.load(ref_data_file) as data:
         z_fill_ref = data['arr_0']
 
