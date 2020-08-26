@@ -100,6 +100,8 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         salt = xr.where(salt > smax, smax, salt)
 
         salt, temp, pressure = xr.broadcast(salt, temp, pressure)
+        if isinstance(salt.data, dask.array.Array):
+            pressure = pressure.chunk(salt.chunks)
 
         if return_coefs:
             RHO, dRHOdS, dRHOdT = _compute_eos_coeffs(salt, temp, pressure)
