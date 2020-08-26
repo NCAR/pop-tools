@@ -132,8 +132,7 @@ def _verify_region_def_schema(region_defs):
 
 
 def _get_region_defititions(ds, grid_name, mask_name):
-    """Return the region mask definition from `region_mask_definitions.yaml`.
-    """
+    """Return the region mask definition from `region_mask_definitions.yaml`."""
     if mask_name == 'default':
         grid_attrs = grid_defs[grid_name]
 
