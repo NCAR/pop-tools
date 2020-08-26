@@ -9,23 +9,10 @@ from pop_tools import DATASETS
 
 def test_lateral_fill_np_array():
 
-    # generate psuedo-data
-    dx, dy = 0.05, 0.05
-    y, x = np.mgrid[slice(1, 3 + dy, dy), slice(1, 5 + dx, dx)]
-    z_orig = np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
-
-    # construct mask and apply mask
-    valid_points = np.ones(z_orig.shape, dtype=np.bool)
-    valid_points = np.where(y < 0.5 * np.sin(5 * x) + 1.5, False, valid_points)
-    z_orig = np.where(~valid_points, np.nan, z_orig)
-
-    # add missing values
-    z_miss = z_orig.copy()
-    z_miss[:20, 62:] = np.nan
-    z_miss[15:18, 0:2] = 10.0
+    valid_points, z = _generate_2D_test_dataset()
 
     # compute lateral fill
-    z_fill = pop_tools.lateral_fill_np_array(z_miss, valid_points)
+    z_fill = pop_tools.lateral_fill_np_array(z, valid_points)
 
     # load reference data
     ref_data_file = DATASETS.fetch('lateral_fill_np_array_filled_ref.npz')
@@ -38,28 +25,45 @@ def test_lateral_fill_np_array():
 
 def test_lateral_fill_np_array_ltripole():
 
-    # generate psuedo-data
-    dx, dy = 0.05, 0.05
-    y, x = np.mgrid[slice(1 - dy, 3 + dy, dy), slice(1 - dx, 5 + dx, dx)]
-    z_orig = np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
-
-    # construct mask and apply mask
-    valid_points = np.ones(z_orig.shape, dtype=np.bool)
-    valid_points = np.where(y < 0.5 * np.sin(5 * x) + 1.5, False, valid_points)
-    z_orig = np.where(~valid_points, np.nan, z_orig)
-
-    # add missing values
-    z_miss = z_orig.copy()
-    z_miss[:20, 62:] = np.nan
-    z_miss[35:, 55:70] = np.nan
-    z_miss[15:18, 0:2] = 10.0
-    z_miss[-2:, 12:20] = 10.0
+    valid_points, z = _generate_2D_test_dataset(tripole=True)
 
     # compute lateral fill
-    z_fill = pop_tools.lateral_fill_np_array(z_miss, valid_points, ltripole=True)
+    z_fill = pop_tools.lateral_fill_np_array(z, valid_points, ltripole=True)
 
     # load reference data
     ref_data_file = DATASETS.fetch('lateral_fill_np_array_tripole_filled_ref.20200818.npz')
+    with np.load(ref_data_file) as data:
+        z_fill_ref = data['arr_0']
+
+    # assert that we match the reference solution
+    np.testing.assert_allclose(z_fill, z_fill_ref, atol=1e-14, equal_nan=True, verbose=True)
+
+
+def test_lateral_fill_np_array_SOR():
+
+    valid_points, z = _generate_2D_test_dataset()
+
+    # compute lateral fill
+    z_fill = pop_tools.lateral_fill_np_array(z, valid_points, use_sor=True)
+
+    # load reference data
+    ref_data_file = DATASETS.fetch('lateral_fill_np_array_filled_SOR_ref.20200820.npz')
+    with np.load(ref_data_file) as data:
+        z_fill_ref = data['arr_0']
+
+    # assert that we match the reference solution
+    np.testing.assert_allclose(z_fill, z_fill_ref, atol=1e-14, equal_nan=True, verbose=True)
+
+
+def test_lateral_fill_np_array_ltripole_SOR():
+
+    valid_points, z = _generate_2D_test_dataset(tripole=True)
+
+    # compute lateral fill
+    z_fill = pop_tools.lateral_fill_np_array(z, valid_points, ltripole=True, use_sor=True)
+
+    # load reference data
+    ref_data_file = DATASETS.fetch('lateral_fill_np_array_tripole_filled_SOR_ref.20200820.npz')
     with np.load(ref_data_file) as data:
         z_fill_ref = data['arr_0']
 
@@ -167,3 +171,28 @@ def test_lateral_fill_4D_3Dmask():
             np.testing.assert_array_equal(arr_0, arr_i)
 
     assert da_out.attrs == attrs
+
+
+def _generate_2D_test_dataset(tripole=False):
+    # generate psuedo-data
+    dx, dy = 0.05, 0.05
+    if tripole:
+        y, x = np.mgrid[slice(1 - dy, 3 + dy, dy), slice(1 - dx, 5 + dx, dx)]
+    else:
+        y, x = np.mgrid[slice(1, 3 + dy, dy), slice(1, 5 + dx, dx)]
+    z_orig = np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
+
+    # construct mask and apply mask
+    valid_points = np.ones(z_orig.shape, dtype=np.bool)
+    valid_points = np.where(y < 0.5 * np.sin(5 * x) + 1.5, False, valid_points)
+    z_orig = np.where(~valid_points, np.nan, z_orig)
+
+    # add missing values
+    z_miss = z_orig.copy()
+    z_miss[:20, 62:] = np.nan
+    z_miss[15:18, 0:2] = 10.0
+    if tripole:
+        z_miss[35:, 55:70] = np.nan
+        z_miss[-2:, 12:20] = 10.0
+
+    return valid_points, z_miss

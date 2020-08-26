@@ -6,6 +6,7 @@ dependencies:
   - bottleneck
   - codecov
   - docrep
+  - netcdf4
   - numba
   - pip
   - pooch
