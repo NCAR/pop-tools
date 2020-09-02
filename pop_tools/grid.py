@@ -319,26 +319,15 @@ def get_grid(grid_name, scrip=False):
     # Remove region_mask_regions
     if 'region_mask_regions' in grid_attrs:
         regions = grid_attrs.pop('region_mask_regions')
-        '''
-        Sample contents of regions:
-        {
-            'Caspian Sea': -14,
-            'Black Sea': -13,
-            'Baltic Sea': -12,
-            'Red Sea': -5,
-            'Southern Ocean': 1,
-            'Pacific Ocean': 2,
-            'Indian Ocean': 3,
-            'Persian Gulf': 4,
-            'Atlantic Ocean': 6,
-            'Mediterranean Sea': 7,
-            'Lab. Sea & Baffin Bay': 8,
-            'GIN Seas': 9,
-            'Arctic Ocean': 10,
-            'Hudson Bay': 11
-        }
-        '''
-        # TODO: turn the regions dictionary into two lists
+        region_names = list(regions.keys())
+        region_vals = list(regions.values())
+        nregions = len(regions)
+        region_coord = list(range(nregions))
+        da_region_names = xr.DataArray(region_names, coords=[region_coord], dims=['nregions'])
+        da_region_vals = xr.DataArray(region_vals, coords=[region_coord], dims=['nregions'])
+        dso['region_name'] = da_region_names
+        dso['region_val'] = da_region_vals
+
     dso.attrs = grid_attrs
 
     return dso
