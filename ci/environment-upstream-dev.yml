@@ -5,7 +5,7 @@ channels:
 dependencies:
   - bottleneck
   - codecov
-  - docrep
+  - docrep=0.2.7
   - netcdf4
   - numba
   - pip
