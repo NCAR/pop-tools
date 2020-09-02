@@ -94,10 +94,9 @@ def eos(salt, temp, return_coefs=False, **kwargs):
     smax = 999.0
 
     if use_xarray:
-        temp = xr.where(temp < tmin, tmin, temp)
-        temp = xr.where(temp > tmax, tmax, temp)
-        salt = xr.where(salt < smin, smin, salt)
-        salt = xr.where(salt > smax, smax, salt)
+
+        temp = temp.clip(tmin, tmax)
+        salt = salt.clip(smin, smax)
 
         salt, temp, pressure = xr.broadcast(salt, temp, pressure)
         if isinstance(salt.data, dask.array.Array):
@@ -133,10 +132,9 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         RHO.attrs['long_name'] = 'Density'
 
     else:
-        temp = np.where(temp < tmin, tmin, temp)
-        temp = np.where(temp > tmax, tmax, temp)
-        salt = np.where(salt < smin, smin, salt)
-        salt = np.where(salt > smax, smax, salt)
+
+        temp = np.clip(temp, tmin, tmax)
+        salt = np.clip(salt, smin, smax)
 
         if return_coefs:
             RHO, dRHOdS, dRHOdT = _compute_eos_coeffs(salt, temp, pressure)
