@@ -94,7 +94,6 @@ def eos(salt, temp, return_coefs=False, **kwargs):
     smax = 999.0
 
     if use_xarray:
-
         temp = temp.clip(tmin, tmax)
         salt = salt.clip(smin, smax)
 
@@ -132,7 +131,6 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         RHO.attrs['long_name'] = 'Density'
 
     else:
-
         temp = np.clip(temp, tmin, tmax)
         salt = np.clip(salt, smin, smax)
 
