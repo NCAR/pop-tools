@@ -35,5 +35,5 @@ def test_get_grid_to_netcdf():
         ds = pop_tools.get_grid(grid)
         for format in ['NETCDF4', 'NETCDF3_64BIT']:
             gridfile = f'{grid}_{format}.nc'
-            ds.to_netcdf(gridfile)
+            ds.to_netcdf(gridfile, format=format)
             os.system(f'rm -f {gridfile}')
