@@ -319,14 +319,11 @@ def get_grid(grid_name, scrip=False):
     # Remove region_mask_regions
     if 'region_mask_regions' in grid_attrs:
         regions = grid_attrs.pop('region_mask_regions')
-        region_names = list(regions.keys())
-        region_vals = list(regions.values())
-        nregions = len(regions)
-        region_coord = list(range(nregions))
-        da_region_names = xr.DataArray(region_names, coords=[region_coord], dims=['nregions'])
-        da_region_vals = xr.DataArray(region_vals, coords=[region_coord], dims=['nregions'])
-        dso['region_name'] = da_region_names
-        dso['region_val'] = da_region_vals
+        region_names, region_vals = list(zip(*regions.items()))
+        region_coord = list(range(len(regions)))
+        dso['region_name'] = xr.DataArray(list(region_names), coords=[region_coord], dims=['nreg'])
+        dso['region_val'] = xr.DataArray(list(region_vals), coords=[region_coord], dims=['nreg'])
+        dso['region_val'].attrs['coordinate'] = 'region_name'
 
     dso.attrs = grid_attrs
 
