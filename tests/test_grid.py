@@ -28,6 +28,12 @@ def test_get_grid_scrip():
     assert ds_compare(ds_test, ds_ref, assertion='allclose', rtol=1e-14, atol=1e-14)
 
 
+def test_get_grid_twice():
+    ds1 = pop_tools.get_grid('POP_gx1v7')
+    ds2 = pop_tools.get_grid('POP_gx1v7')
+    xr.testing.assert_identical(ds1, ds2)
+
+
 def test_get_grid_to_netcdf():
     for grid in pop_tools.grid_defs.keys():
         print('-' * 80)
