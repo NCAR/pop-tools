@@ -1,10 +1,10 @@
 import dask
 import numpy as np
 import xarray as xr
-from numba import jit
+from numba import vectorize
 
 
-@jit(nopython=True)
+@vectorize(['float64(float64)', 'float32(float32)'], nopython=True)
 def compute_pressure(depth):
     """
     Convert depth in meters to pressure in bars.
@@ -145,7 +145,10 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         return RHO
 
 
-@jit(nopython=True)
+@vectorize(
+    ['float64(float64, float64, float64)', 'float32(float32, float32, float32)'],
+    nopython=True,
+)
 def _compute_eos(salt, temp, pressure):
     # MWJF EOS coefficients
     # *** these constants will be used to construct the numerator
