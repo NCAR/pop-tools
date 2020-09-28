@@ -113,18 +113,14 @@ def eos(salt, temp, return_coefs=False, **kwargs):
             dRHOdT.attrs['long_name'] = 'Thermal expansion coefficient'
 
         else:
-            if isinstance(salt.data, dask.array.Array):
-                RHO = xr.apply_ufunc(
-                    _compute_eos,
-                    salt,
-                    temp,
-                    pressure,
-                    dask='parallelized',
-                    output_dtypes=[salt.dtype],
-                )
-            else:
-                RHO = xr.full_like(salt, fill_value=np.nan)
-                RHO[:] = _compute_eos(salt.data, temp.data, pressure.data)
+            RHO = xr.apply_ufunc(
+                _compute_eos,
+                salt,
+                temp,
+                pressure,
+                dask='parallelized',
+                output_dtypes=[salt.dtype],
+            )
 
         RHO.name = 'density'
         RHO.attrs['units'] = 'kg/m^3'
