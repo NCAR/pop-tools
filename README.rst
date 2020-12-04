@@ -2,7 +2,7 @@ POP-tools: Tools to support analysis of POP2-CESM model solutions with xarray
 =============================================================================
 
 
-.. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/code-style?label=Code%20Style&style=for-the-badge
+.. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/linting?label=Code%20Style&style=for-the-badge
     :target: https://github.com/NCAR/pop-tools/actions
     :alt: GitHub Workflow Status
 
