@@ -2,7 +2,7 @@ POP_gx1v6:
   lat-range-basin:
     Global:
       - match:
-          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     90S-44S:
       - bounds:
           TLAT: [-90., -44.]
@@ -62,7 +62,7 @@ POP_gx1v6:
   Pacific-Indian-Atlantic:
     Global:
       - match:
-          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     Atlantic Ocean:
       - match:
           REGION_MASK: [6, 8, 9, 10, 11]
@@ -89,7 +89,7 @@ POP_gx1v7:
   lat-range-basin:
     Global:
       - match:
-          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     90S-44S:
       - bounds:
           TLAT: [-90., -44.]
@@ -149,7 +149,7 @@ POP_gx1v7:
   Pacific-Indian-Atlantic:
     Global:
       - match:
-          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11]
+          REGION_MASK: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     Atlantic Ocean:
       - match:
           REGION_MASK: [6, 8, 9, 10, 11]
