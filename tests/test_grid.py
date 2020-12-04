@@ -26,3 +26,20 @@ def test_get_grid_scrip():
 def test_cesm_local_inputdata():
     cesm_dataroot = os.environ.get('CESMDATAROOT', None)
     assert pop_tools.grid.INPUTDATA.path.as_posix() == cesm_dataroot
+
+
+def test_get_grid_twice():
+    ds1 = pop_tools.get_grid('POP_gx1v7')
+    ds2 = pop_tools.get_grid('POP_gx1v7')
+    xr.testing.assert_identical(ds1, ds2)
+
+
+def test_get_grid_to_netcdf():
+    for grid in pop_tools.grid_defs.keys():
+        print('-' * 80)
+        print(grid)
+        ds = pop_tools.get_grid(grid)
+        for format in ['NETCDF4', 'NETCDF3_64BIT']:
+            gridfile = f'{grid}_{format}.nc'
+            ds.to_netcdf(gridfile, format=format)
+            os.system(f'rm -f {gridfile}')

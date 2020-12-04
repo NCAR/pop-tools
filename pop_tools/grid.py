@@ -377,7 +377,17 @@ def get_grid(grid_name, scrip=False):
         )
 
     grid_attrs.update({'title': f'{grid_name} grid'})
+
     dso.attrs = grid_attrs
+
+    # Remove region_mask_regions
+    if 'region_mask_regions' in dso.attrs:
+        regions = dso.attrs.pop('region_mask_regions')
+        region_names, region_vals = list(zip(*regions.items()))
+        region_coord = list(range(len(regions)))
+        dso['region_name'] = xr.DataArray(list(region_names), coords=[region_coord], dims=['nreg'])
+        dso['region_val'] = xr.DataArray(list(region_vals), coords=[region_coord], dims=['nreg'])
+        dso['region_val'].attrs['coordinate'] = 'region_name'
 
     return dso
 

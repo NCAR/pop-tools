@@ -12,7 +12,10 @@ def is_ncar_host():
     hostname = socket.getfqdn()
 
     return any(
-        [re.compile(ncar_host).search(hostname) for ncar_host in ['cheyenne', 'casper', 'hobart']]
+        [
+            re.compile(ncar_host).search(hostname)
+            for ncar_host in ['cheyenne', 'casper', 'hobart', 'izumi']
+        ]
     )
 
 

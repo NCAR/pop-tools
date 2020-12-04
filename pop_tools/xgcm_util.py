@@ -127,7 +127,7 @@ def to_xgcm_grid_dataset(ds, **kwargs):
 
     Examples
     --------
-    >>> from pop_tools import get_xgcm_grid, DATASETS
+    >>> from pop_tools import DATASETS
     >>> import xarray as xr
     >>> filepath = DATASETS.fetch("g.e20.G.TL319_t13.control.001_hfreq-coarsen.nc")
     >>> ds = xr.open_dataset(filepath)

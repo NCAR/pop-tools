@@ -57,7 +57,7 @@ def region_mask_3d(grid_name, mask_name=None, region_defs=None):
         mask_name = 'user-defined'
 
     if region_defs is None:
-        region_defs = _get_region_defititions(ds, grid_name, mask_name)
+        region_defs = _get_region_definitions(ds, grid_name, mask_name)
 
     _verify_region_def_schema(region_defs)
 
@@ -131,9 +131,8 @@ def _verify_region_def_schema(region_defs):
                 assert crit_type in ['bounds', 'match']
 
 
-def _get_region_defititions(ds, grid_name, mask_name):
-    """Return the region mask definition from `region_mask_definitions.yaml`.
-    """
+def _get_region_definitions(ds, grid_name, mask_name):
+    """Return the region mask definition from `region_mask_definitions.yaml`."""
     if mask_name == 'default':
         grid_attrs = grid_defs[grid_name]
 
