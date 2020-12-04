@@ -1,10 +1,10 @@
 import dask
 import numpy as np
 import xarray as xr
-from numba import jit
+from numba import vectorize
 
 
-@jit(nopython=True)
+@vectorize(['float64(float64)', 'float32(float32)'], nopython=True)
 def compute_pressure(depth):
     """
     Convert depth in meters to pressure in bars.
@@ -113,18 +113,14 @@ def eos(salt, temp, return_coefs=False, **kwargs):
             dRHOdT.attrs['long_name'] = 'Thermal expansion coefficient'
 
         else:
-            if isinstance(salt.data, dask.array.Array):
-                RHO = xr.apply_ufunc(
-                    _compute_eos,
-                    salt,
-                    temp,
-                    pressure,
-                    dask='parallelized',
-                    output_dtypes=[salt.dtype],
-                )
-            else:
-                RHO = xr.full_like(salt, fill_value=np.nan)
-                RHO[:] = _compute_eos(salt.data, temp.data, pressure.data)
+            RHO = xr.apply_ufunc(
+                _compute_eos,
+                salt,
+                temp,
+                pressure,
+                dask='parallelized',
+                output_dtypes=[salt.dtype],
+            )
 
         RHO.name = 'density'
         RHO.attrs['units'] = 'kg/m^3'
@@ -145,7 +141,10 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         return RHO
 
 
-@jit(nopython=True)
+@vectorize(
+    ['float64(float64, float64, float64)', 'float32(float32, float32, float32)'],
+    nopython=True,
+)
 def _compute_eos(salt, temp, pressure):
     # MWJF EOS coefficients
     # *** these constants will be used to construct the numerator
