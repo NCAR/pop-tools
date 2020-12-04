@@ -5,7 +5,7 @@ dependencies:
   - bottleneck
   - codecov
   - dask
-  - docrep
+  - docrep=0.2.7
   - nbsphinx
   - netcdf4
   - numba
