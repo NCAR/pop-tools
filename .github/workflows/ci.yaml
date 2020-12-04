@@ -35,7 +35,7 @@ jobs:
       - name: Set up conda environment
         run: |
           mamba env update -f ci/environment.yml
-          python -m pip install -e .
+          python -m pip install .
           conda list
 
       - name: Run Tests
@@ -70,7 +70,7 @@ jobs:
       - name: Set up conda environment
         run: |
           mamba env update -f ci/environment-upstream-dev.yml
-          python -m pip install -e .
+          python -m pip install .
           conda list
 
       - name: Run Tests
