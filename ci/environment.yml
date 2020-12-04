@@ -1,7 +1,6 @@
 name: pop-tools-dev
 channels:
   - conda-forge
-  - numba
 dependencies:
   - bottleneck
   - codecov
