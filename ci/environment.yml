@@ -1,12 +1,11 @@
 name: pop-tools-dev
 channels:
   - conda-forge
-  - numba
 dependencies:
   - bottleneck
   - codecov
   - dask
-  - docrep=0.2.7
+  - docrep
   - nbsphinx
   - netcdf4
   - numba
