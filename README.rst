@@ -2,17 +2,16 @@ POP-tools: Tools to support analysis of POP2-CESM model solutions with xarray
 =============================================================================
 
 
-.. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/linting?label=Code%20Style&style=for-the-badge
-    :target: https://github.com/NCAR/pop-tools/actions
-    :alt: GitHub Workflow Status
+.. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/CI?label=CI&logo=github&style=for-the-badge
+    :target: https://github.com/NCAR/pop-tools/actions?query=workflow%3ACI
+    :alt: GitHub Workflow CI Status
 
-
-.. image:: https://img.shields.io/circleci/project/github/NCAR/pop-tools/master.svg?style=for-the-badge&logo=circleci
-    :target: https://circleci.com/gh/NCAR/pop-tools/tree/master
+.. image:: https://img.shields.io/github/workflow/status/NCAR/pop-tools/linting?label=linting&logo=github&style=for-the-badge
+    :target: https://github.com/NCAR/pop-tools/actions?query=workflow%3Alinting
+    :alt: GitHub Workflow Linting Status
 
 .. image:: https://img.shields.io/codecov/c/github/NCAR/pop-tools.svg?style=for-the-badge
     :target: https://codecov.io/gh/NCAR/pop-tools
-
 
 .. image:: https://img.shields.io/readthedocs/pop-tools/latest.svg?style=for-the-badge
     :target: https://pop-tools.readthedocs.io/en/latest/?badge=latest
