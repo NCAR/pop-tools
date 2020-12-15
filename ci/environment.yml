@@ -4,16 +4,16 @@ channels:
 dependencies:
   - bottleneck
   - codecov
-  - dask
-  - docrep=0.2.7
+  - dask>=2.14
+  - docrep==0.2.7
   - nbsphinx
   - netcdf4
-  - numba
+  - numba>=0.52
   - pip
-  - pooch
+  - pooch>=1.3.0
   - pytest-cov
-  - pyyaml
+  - pyyaml>=5.3.1
   - scipy
-  - xarray
+  - xarray>=0.16.1
   - xgcm
   - watermark
