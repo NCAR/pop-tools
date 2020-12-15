@@ -14,19 +14,24 @@ except ImportError:
     tqdm = None
 
 
-INPUTDATA_DIR = ['~', '.pop_tools']
-
 # On Cheyenne/Casper and/or CGD machines, use local inputdata directory
 # See: https://github.com/NCAR/pop-tools/issues/24#issue-523701065
+# The name of the environment variable that can overwrite the path argument
+cesm_data_root_path = os.environ.get('CESMDATAROOT')
+
+if cesm_data_root_path is not None and os.path.exists(cesm_data_root_path):
+    INPUTDATA_DIR = cesm_data_root_path
+else:
+    # This is still the default in case the environment variable isn't defined
+    INPUTDATA_DIR = ['~', '.pop_tools']
+
 
 INPUTDATA = pooch.create(
-    # This is still the default in case the environment variable isn't defined
     path=INPUTDATA_DIR,
     version_dev='master',
     base_url='https://svn-ccsm-inputdata.cgd.ucar.edu/trunk/',
-    # The name of the environment variable that can overwrite the path argument
-    env='CESMDATAROOT',
 )
+
 
 INPUTDATA.load_registry(pkg_resources.resource_stream('pop_tools', 'inputdata_registry.txt'))
 
@@ -35,11 +40,68 @@ if tqdm is not None:
 else:
     downloader = pooch.HTTPDownloader(verify=False, allow_redirects=True)
 
+
 grid_def_file = pkg_resources.resource_filename('pop_tools', 'pop_grid_definitions.yaml')
 input_templates_dir = pkg_resources.resource_filename('pop_tools', 'input_templates')
 
 with open(grid_def_file) as f:
     grid_defs = yaml.safe_load(f)
+
+
+def fetch(self, fname, processor=None, downloader=None):
+
+    """
+    This is a modified version of Pooch.fetch() method. This modification is necessary
+    due to the fact that on Cheyenne/Casper path to the local data storage folder points
+    to a folder (CESMDATAROOT: /glade/p/cesmdata/cseg), and this is not a location that
+    we have permissions to write to.
+
+    Parameters
+    ----------
+    fname : str
+        The file name (relative to the *base_url* of the remote data
+        storage) to fetch from the local storage.
+    processor : None or callable
+        If not None, then a function (or callable object) that will be
+        called before returning the full path and after the file has been
+        downloaded (if required).
+    downloader : None or callable
+        If not None, then a function (or callable object) that will be
+        called to download a given URL to a provided local file name. By
+        default, downloads are done through HTTP without authentication
+        using :class:`pooch.HTTPDownloader`.
+    Returns
+    -------
+    full_path : str
+        The absolute path (including the file name) of the file in the
+        local storage.
+
+    """
+
+    self._assert_file_in_registry(fname)
+    url = self.get_url(fname)
+    full_path = self.abspath / fname
+    known_hash = self.registry[fname]
+    abspath = str(self.abspath)
+    action, verb = pooch.core.download_action(full_path, known_hash)
+
+    if action in ('download', 'update'):
+        pooch.utils.get_logger().info("%s file '%s' from '%s' to '%s'.", verb, fname, url, abspath)
+        if downloader is None:
+            downloader = pooch.downloaders.choose_downloader(url)
+
+        pooch.core.stream_download(url, full_path, known_hash, downloader, pooch=self)
+
+    if processor is not None:
+        return processor(str(full_path), action, self)
+
+    return str(full_path)
+
+
+# Override fetch method at instance level
+# Reference: https://stackoverflow.com/a/46757134/7137180
+# Replace fetch() with modified fetch() for this object only
+INPUTDATA.fetch = fetch.__get__(INPUTDATA, pooch.Pooch)
 
 
 def get_grid(grid_name, scrip=False):

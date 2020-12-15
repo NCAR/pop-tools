@@ -12,6 +12,7 @@ DATASETS = pooch.create(
     path=['~', '.pop_tools', 'data'],
     version_dev='master',
     base_url='ftp://ftp.cgd.ucar.edu/archive/aletheia-data/cesm-data/ocn/',
+    env='POP_TOOLS_DATA_DIR',
 )
 DATASETS.load_registry(pkg_resources.resource_stream('pop_tools', 'data_registry.txt'))
 
