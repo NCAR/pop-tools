@@ -476,12 +476,14 @@ def _compute_corners(ULAT, ULONG):
 )
 def numba_4pt_min(var, out):
     """
-    Calculate minimum over
+    gufunc to calculate minimum over
                  (i, j+1) ————— (i+1, j+1)
                      |              |
                      |              |
                    (i,j)  ————— (i+1, j)
-    at every depth level. Assumes that "z" is the first axes
+    at every depth level.
+
+    Expects and returns a 2d numpy array
     """
     dim1, dim0 = var.shape
     out[:] = np.full_like(var, fill_value=0)
@@ -493,34 +495,38 @@ def numba_4pt_min(var, out):
             )
 
 
-def four_point_min(array):
+def four_point_min(array, dims=('nlat', 'nlon')):
     """
-    Utility function that calculates minimum at 4 surrounding points
+    Utility function that calculates minimum at 4 surrounding points in 2D slices
+    along dimensions ``dims.
+
+    Output at (i,j) is minimium over the following 4 points
+                   (i, j+1) ————— (i+1, j+1)
+                     |              |
+                     |              |
+                   (i,j)  ————— (i+1, j)
 
     Parameters
     ----------
     array: DataArray
         A 2D or 3D DataArray
 
+    dims: tuple or list
+        two element tuple or list of dimension names
+
     Returns
     -------
-    dask.Array, np.ndarray
+    DataArray
     """
 
     import dask
 
-    zdims = [dim for dim in array.dims if 'z' in dim]
-    if len(zdims) > 1:
-        raise ValueError(f'Multiple z dimensions detected: {zdims}. Expected only one.')
-    elif len(zdims) == 1:
-        array = array.transpose(zdims[0], ...)
+    if len(dims) != 2:
+        raise ValueError(f'Expected 2 dimensions. Received {dims} instead.')
 
+    array = array.transpose(..., *dims)
     data = array.data
-    # window is 2 points in nlat & nlon (assumed to be last two dimensions)
-    if data.ndim == 2:
-        depth = {0: (0, 1), 1: (0, 1)}
-    else:
-        depth = {0: 0, 1: (0, 1), 2: (0, 1)}
+    depth = {-1: (0, 1), -2: (0, 1)}
 
     if dask.is_dask_collection(data):
         result = data.map_overlap(numba_4pt_min, depth=depth, boundary='none', dtype=data.dtype)
@@ -541,8 +547,9 @@ def calc_dzu_dzt(grid):
     Parameters
     ----------
     grid: Dataset
-        An xarray Dataset containing grid variables. This must contain partial bottom
-        cell information: KMT and DZBC.
+        An xarray Dataset containing grid variables. This *must* contain partial bottom
+        cell information: KMT and DZBC. Datasets with dimensions renamed for xgcm are not
+        allowed.
 
     Returns
     -------
@@ -572,23 +579,29 @@ def calc_dzu_dzt(grid):
     KMT = grid.KMT
     DZBC = grid.DZBC
 
+    dzunit = dz.attrs.get('units', None)
+    zunit = {'units': dzunit} if dzunit is not None else {}
+
     # build a 1D DataArray of z-index value
     fortran_zindex = dz.copy(data=np.arange(1, grid.sizes['z_t'] + 1))
 
     # set values at KMT to DZBC, else, use existing nominal dz
-    dzt = xr.where(fortran_zindex == KMT, DZBC, dz)
-    dzt.name = 'DZT'
-    dzt.attrs = {'long_name': 'Thickness of T cells', 'units': 'centimeter', 'grid_loc': '3111'}
+    DZT = xr.where(fortran_zindex == KMT, DZBC, dz)
+    DZT.name = 'DZT'
+    DZT.attrs = {'long_name': 'Thickness of T cells', **zunit, 'grid_loc': '3111'}
 
-    # now make dzu
-    dzu = four_point_min(dzt)
+    if 'nlon_t' in DZT.dims:
+        raise ValueError('datasets renamed for xgcm are not allowed.')
+
+    # now make DZU
+    DZU = four_point_min(DZT)
     KMU = four_point_min(KMT)
 
     # In Fortran-like code, DZU is computed using a WORK variable that has DZT values.
     # Then only values above KMU are modified, so we replicate that here
     # so that we can run tests and users can check against existing code
-    dzu = xr.where(fortran_zindex >= KMU, dzt, dzu)
-    dzu.name = 'DZU'
-    dzu.attrs = {'long_name': 'Thickness of U cells', 'units': 'centimeter', 'grid_loc': '3221'}
+    DZU = xr.where(fortran_zindex >= KMU, DZT, DZU)
+    DZU.name = 'DZU'
+    DZU.attrs = {'long_name': 'Thickness of U cells', **zunit, 'grid_loc': '3221'}
 
-    return dzt, dzu
+    return DZT, DZU

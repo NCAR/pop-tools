@@ -72,10 +72,13 @@ def test_dzu_dzt():
     ds = xr.open_zarr(zstore).sel(nlat=slice(100, 300))
 
     dzu, dzt = pop_tools.grid.calc_dzu_dzt(ds)
-
     # northernmost row will be wrong since we are working on a subset
     assert_equal(dzu.isel(nlat=slice(-1)), ds['DZU'].isel(nlat=slice(-1)))
     assert_equal(dzt, ds['DZT'])
+
+    _, xds = pop_tools.to_xgcm_grid_dataset(ds)
+    with pytest.raises(ValueError):
+        pop_tools.grid.calc_dzu_dzt(xds)
 
     expected_vars = ['dz', 'KMT', 'DZBC']
     for var in expected_vars:
