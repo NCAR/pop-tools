@@ -577,6 +577,7 @@ def calc_dzu_dzt(grid):
     # set values at KMT to DZBC, else, use existing nominal dz
     dzt = xr.where(fortran_zindex == KMT, DZBC, dz)
     dzt.name = 'DZT'
+    dzt.attrs = {'long_name': 'Thickness of T cells', 'units': 'centimeter', 'grid_loc': '3111'}
 
     # now make dzu
     dzu = four_point_min(dzt)
@@ -586,5 +587,6 @@ def calc_dzu_dzt(grid):
     # so that we can run tests and users can check against existing code
     dzu = xr.where(fortran_zindex >= KMU, dzt, dzu)
     dzu.name = 'DZU'
+    dzu.attrs = {'long_name': 'Thickness of U cells', 'units': 'centimeter', 'grid_loc': '3221'}
 
     return dzt, dzu
