@@ -11,6 +11,7 @@ Grid
 ~~~~
 
 .. autosummary::
+   calc_dzu_dzt
    get_grid
 
 Equation of State
@@ -32,6 +33,7 @@ Utilities
 ~~~~~~~~~
 
 .. autosummary::
+   four_point_min
    lateral_fill
 
 
