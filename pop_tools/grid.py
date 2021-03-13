@@ -6,7 +6,7 @@ import pkg_resources
 import pooch
 import xarray as xr
 import yaml
-from numba import jit, prange
+from numba import double, float_, guvectorize, int_, jit, prange
 
 try:
     from tqdm import tqdm
@@ -465,26 +465,35 @@ def _compute_corners(ULAT, ULONG):
     return corner_lat, corner_lon
 
 
-@jit(cache=True, nopython=True)
-def dzu_from_dzt(dzt):
-    var = dzt
-    dimz, dimy, dimx = dzt.shape
-    outvar = np.full_like(dzt, fill_value=0)
+@guvectorize(
+    [
+        (int_[:, :], int_[:, :]),
+        (double[:, :], double[:, :]),
+    ],
+    '(n,m)->(n,m)',
+    nopython=True,
+    cache=True,
+)
+def numba_4pt_min(var, out):
+    """
+    Calculate minimum over
+                 (i, j+1) ————— (i+1, j+1)
+                     |              |
+                     |              |
+                   (i,j)  ————— (i+1, j)
+    at every depth level. Assumes that "z" is the first axes
+    """
+    dim1, dim0 = var.shape
+    out[:] = np.full_like(var, fill_value=0)
 
-    for k in np.arange(dimz):
-        for j in np.arange(dimy - 1):
-            for i in np.arange(dimx - 1):
-                outvar[k, j, i] = np.min(
-                    np.array(
-                        [var[k, j, i], var[k, j + 1, i], var[k, j, i + 1], var[k, j + 1, i + 1]]
-                    )
-                )
-
-    return outvar
+    for j in prange(dim1 - 1):
+        for i in prange(dim0 - 1):
+            out[j, i] = np.min(
+                np.array([var[j, i], var[j + 1, i], var[j, i + 1], var[j + 1, i + 1]])
+            )
 
 
 def four_point_min(array):
-
     """
     Utility function that calculates minimum at 4 surrounding points
 
@@ -499,7 +508,6 @@ def four_point_min(array):
     """
 
     import dask
-    from scipy.ndimage import minimum_filter
 
     zdims = [dim for dim in array.dims if 'z' in dim]
     if len(zdims) > 1:
@@ -509,21 +517,15 @@ def four_point_min(array):
 
     data = array.data
     # window is 2 points in nlat & nlon (assumed to be last two dimensions)
-    # the "depth" passed to dask's map_overlap must be asymmetric. I don't understand this
     if data.ndim == 2:
-        min_kwargs = dict(origin=(-1, -1), size=(2, 2), mode='nearest')
         depth = {0: (0, 1), 1: (0, 1)}
-
     else:
-        min_kwargs = dict(origin=(0, -1, -1), size=(1, 2, 2))
         depth = {0: 0, 1: (0, 1), 2: (0, 1)}
 
     if dask.is_dask_collection(data):
-        result = data.map_overlap(
-            minimum_filter, **min_kwargs, depth=depth, boundary='none', dtype=data.dtype
-        )
+        result = data.map_overlap(numba_4pt_min, depth=depth, boundary='none', dtype=data.dtype)
     else:
-        result = minimum_filter(data, **min_kwargs)
+        result = numba_4pt_min(data)
 
     return array.copy(data=result)
 
@@ -568,7 +570,6 @@ def calc_dzu_dzt(grid):
 
     dz = grid.dz
     KMT = grid.KMT
-    KMU = grid.KMU  # four_point_min(KMT)
     DZBC = grid.DZBC
 
     # build a 1D DataArray of z-index value
@@ -581,6 +582,7 @@ def calc_dzu_dzt(grid):
 
     # now make dzu
     dzu = four_point_min(dzt)
+    KMU = four_point_min(KMT)
 
     # In Fortran-like code, DZU is computed using a WORK variable that has DZT values.
     # Then only values above KMU are modified, so we replicate that here
