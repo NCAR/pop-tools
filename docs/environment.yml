@@ -1,0 +1,23 @@
+name: pop-tools-docs
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - dask 
+  - fsspec
+  - jupyterlab
+  - matplotlib
+  - netcdf4
+  - nbsphinx
+  - numba 
+  - pip 
+  - python=3.8
+  - sphinx_rtd_theme
+  - watermark
+  - xarray 
+  - xgcm 
+  - zarr 
+  - pooch
+  - pip:
+      - -r ../requirements.txt
+      - -e ..
