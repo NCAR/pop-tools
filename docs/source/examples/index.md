@@ -10,4 +10,5 @@ region-mask.ipynb
 lateral-fill-idealized.ipynb
 lateral-fill-model-grid.ipynb
 pop_div_curl_xr_xgcm_metrics_compare.ipynb
+CloseHeatBudget_POP2.ipynb
 ```
