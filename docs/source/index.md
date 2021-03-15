@@ -13,8 +13,8 @@ If you encounter any errors or problems with **pop-tools**, please open an issue
 maxdepth: 2
 caption: User Guide
 ---
-install.md
-examples
+install
+examples/index
 ```
 
 ```{toctree}
@@ -23,4 +23,13 @@ maxdepth: 2
 caption: Reference
 ---
 api.rst
+```
+
+```{toctree}
+---
+maxdepth: 1
+caption: Contribute to pop-tools
+contributing
+changelog
+GitHub Repo <https://github.com/NCAR/pop-tools>
 ```
