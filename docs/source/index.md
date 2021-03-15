@@ -29,6 +29,7 @@ api.rst
 ---
 maxdepth: 1
 caption: Contribute to pop-tools
+---
 contributing
 changelog
 GitHub Repo <https://github.com/NCAR/pop-tools>
