@@ -47,6 +47,7 @@ extensions = [
     'sphinx.ext.linkcode',
     'sphinxext.opengraph',
     'sphinx_copybutton',
+    'sphinx_comments',
 ]
 
 # MyST config
@@ -62,6 +63,11 @@ jupyter_execute_notebooks = 'auto'
 
 execution_timeout = 500
 
+
+comments_config = {
+    'utterances': {'repo': 'NCAR/pop-tools', 'optional': 'config', 'label': '💬 comment'},
+    'hypothesis': True,
+}
 
 extlinks = {
     'issue': ('https://github.com/NCAR/pop-tools/issues/%s', 'GH#'),
