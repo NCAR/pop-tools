@@ -1,6 +1,6 @@
-# Contribution Guide
+# Contributing Guide
 
-- [Contribution Guide](#contribution-guide)
+- [Contributing Guide](#contributing-guide)
   - [Feature requests and feedback](#feature-requests-and-feedback)
   - [Report bugs](#report-bugs)
   - [Fix bugs](#fix-bugs)
