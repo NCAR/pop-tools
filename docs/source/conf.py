@@ -45,7 +45,7 @@ copybutton_prompt_is_regexp = True
 
 # myst-nb configurations
 # https://myst-nb.readthedocs.io/en/latest/use/execute.html
-jupyter_execute_notebooks = 'cache'
+jupyter_execute_notebooks = 'auto'
 execution_timeout = 500
 
 
