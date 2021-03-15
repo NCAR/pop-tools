@@ -3,21 +3,13 @@
 
 """The setup script."""
 
-import sys
-from os.path import exists
-
 from setuptools import setup
 
-if exists('README.rst'):
-    with open('README.rst') as f:
-        long_description = f.read()
-else:
-    long_description = ''
+with open('README.md') as f:
+    long_description = f.read()
 
 with open('requirements.txt') as f:
     install_requires = f.read().strip().split('\n')
-
-test_requirements = ['pytest']
 
 
 CLASSIFIERS = [
@@ -38,16 +30,20 @@ setup(
     maintainer_email='mclong@ucar.edu',
     description='POP2-CESM tools',
     install_requires=install_requires,
-    license='Apache License 2.0',
+    license='Apache Software License 2.0',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     classifiers=CLASSIFIERS,
     keywords='ocean modeling cesm',
     name='pop-tools',
     packages=['pop_tools'],
-    test_suite='tests',
-    tests_require=test_requirements,
     include_package_data=True,
     url='https://github.com/NCAR/pop-tools',
+    project_urls={
+        'Documentation': 'https://pop-tools.readthedocs.io',
+        'Source': 'https://github.com/NCAR/pop-tools',
+        'Tracker': 'https://github.com/NCAR/pop-tools/issues',
+    },
     use_scm_version={'version_scheme': 'post-release', 'local_scheme': 'dirty-tag'},
     setup_requires=['setuptools_scm', 'setuptools>=30.3.0'],
     zip_safe=False,

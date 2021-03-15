@@ -3,7 +3,7 @@ recursive-include pop_tools *.yaml
 recursive-include pop_tools *.txt
 include pop_tools/input_templates/*
 include LICENSE
-include README.rst
+include README.md
 include requirements.txt
 
 recursive-exclude * __pycache__

@@ -8,7 +8,6 @@ dependencies:
   - jupyterlab
   - matplotlib
   - netcdf4
-  - nbsphinx
   - numba
   - pip
   - python=3.8
@@ -18,6 +17,7 @@ dependencies:
   - xgcm
   - zarr
   - pooch
+  - myst-nb
   - pip:
       - -r ../requirements.txt
       - -e ..
