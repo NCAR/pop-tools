@@ -7,17 +7,19 @@ dependencies:
   - fsspec
   - jupyterlab
   - matplotlib
+  - myst-nb
   - netcdf4
   - numba
   - pip
+  - pooch
   - python=3.8
-  - sphinx_rtd_theme
+  - sphinx-book-theme >= 0.0.38
+  - sphinx-copybutton
   - watermark
   - xarray
   - xgcm
   - zarr
-  - pooch
-  - myst-nb
   - pip:
+      - sphinxext-opengraph
       - -r ../requirements.txt
       - -e ..
