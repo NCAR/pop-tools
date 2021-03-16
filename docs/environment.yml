@@ -19,6 +19,7 @@ dependencies:
   - xarray
   - xgcm
   - zarr
+  - tqdm
   - pip:
       - sphinxext-opengraph
       - sphinx-comments
