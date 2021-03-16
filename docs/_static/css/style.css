@@ -1,19 +1,19 @@
 /* Reduce left and right margins */
 
-.container,
+/* .container,
 .container-lg,
 .container-md,
 .container-sm,
 .container-xl {
   max-width: 1600px !important;
-}
+} */
 
 /* Copied from
 https://github.com/bokeh/bokeh/blob/branch-2.4/sphinx/source/bokeh/static/custom.css
 */
 
-:root {
-  /* Logo image height + all the paddings/margins make the navbar height. */
+/* Logo image height + all the paddings/margins make the navbar height. */
+/* :root {
   --navbar-height: calc(30px + 0.3125rem * 2 + 0.5rem * 2);
 }
 
@@ -26,7 +26,7 @@ https://github.com/bokeh/bokeh/blob/branch-2.4/sphinx/source/bokeh/static/custom
   .search-front-page {
     width: 50%;
   }
-}
+} */
 
 /* minimal copy paste from bootstrap docs css to get sidebars working */
 
@@ -35,8 +35,6 @@ https://github.com/bokeh/bokeh/blob/branch-2.4/sphinx/source/bokeh/static/custom
   order: 2;
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
-  /* font-size: 0.875rem; */
-  /* add scrolling sidebar */
   height: calc(100vh - 2rem);
   overflow-y: auto;
 }
@@ -179,9 +177,6 @@ https://github.com/bokeh/bokeh/blob/branch-2.4/sphinx/source/bokeh/static/custom
 .bd-sidebar .nav > .active:hover > a {
   font-weight: 400;
   color: #130654;
-  /* adjusted from original
-  color: rgba(0, 0, 0, 0.85);
-  background-color: transparent; */
 }
 
 .bd-sidebar .nav > li > ul {
@@ -215,8 +210,8 @@ main *:target::before {
   margin-top: calc(-1 * var(--navbar-height));
 }
 
+/* Add padding to body to avoid overlap with navbar. */
 body {
-  /* Add padding to body to avoid overlap with navbar. */
   padding-top: var(--navbar-height);
   width: 100%;
 }
