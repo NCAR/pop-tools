@@ -175,7 +175,7 @@ html_logo = 'images/nsf.png'
 
 
 html_static_path = ['../_static']
-# html_css_files = ['css/style.css']
+html_css_files = ['css/style.css']
 
 
 today_fmt = '%Y-%m-%d'
