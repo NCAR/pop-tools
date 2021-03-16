@@ -30,6 +30,7 @@ setup(
     maintainer_email='mclong@ucar.edu',
     description='POP2-CESM tools',
     install_requires=install_requires,
+    python_requires='>=3.7',
     license='Apache Software License 2.0',
     long_description=long_description,
     long_description_content_type='text/markdown',
