@@ -45,9 +45,13 @@ copybutton_prompt_is_regexp = True
 
 # myst-nb configurations
 # https://myst-nb.readthedocs.io/en/latest/use/execute.html
-jupyter_execute_notebooks = 'auto'
-execution_timeout = 500
-
+jupyter_execute_notebooks = 'cache'
+execution_timeout = 600
+# Don't execute these notebooks
+execution_excludepatterns = [
+    'examples/pop_div_curl_xr_xgcm_metrics_compare*',
+    'examples/CloseHeatBudget_POP2*',
+]
 
 comments_config = {
     'utterances': {'repo': 'NCAR/pop-tools', 'optional': 'config', 'label': '💬 comment'},
