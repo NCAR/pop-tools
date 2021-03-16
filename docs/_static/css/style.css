@@ -7,9 +7,3 @@
 .container-xl {
   max-width: 1600px !important;
 }
-
-/* Make sidebar sticky */
-
-.bd-sidebar {
-  position: sticky !important;
-}
