@@ -27,11 +27,11 @@ jobs:
           activate-environment: pop-tools-dev
           auto-update-conda: false
           python-version: ${{ matrix.python-version }}
+          environment-file: ci/environment.yml
 
-      - name: Set up conda environment
+      - name: Install pop-tools
         run: |
-          mamba env update -f ci/environment.yml
-          python -m pip install .
+          python -m pip install . --no-deps
           conda list
 
       - name: Run Tests
