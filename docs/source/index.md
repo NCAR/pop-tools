@@ -35,5 +35,5 @@ hidden:
 contributing
 changelog
 GitHub Repo <https://github.com/NCAR/pop-tools>
-GitHub discussions <https://github.com/pydata/xarray/discussions>
+GitHub discussions <https://github.com/NCAR/pop-tools/discussions>
 ```
