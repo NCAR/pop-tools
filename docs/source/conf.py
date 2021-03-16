@@ -55,7 +55,7 @@ execution_excludepatterns = [
 
 comments_config = {
     'utterances': {'repo': 'NCAR/pop-tools', 'optional': 'config', 'label': '💬 comment'},
-    'hypothesis': True,
+    'hypothesis': False,
 }
 
 extlinks = {
