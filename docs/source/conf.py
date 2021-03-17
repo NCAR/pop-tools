@@ -36,7 +36,18 @@ extensions = [
 ]
 
 # MyST config
-myst_enable_extensions = ['amsmath', 'colon_fence', 'deflist', 'html_image']
+myst_enable_extensions = [
+    'amsmath',
+    'colon_fence',
+    'deflist',
+    'dollarmath',
+    'html_admonition',
+    'html_image',
+    'linkify',
+    'replacements',
+    'smartquotes',
+    'substitution',
+]
 myst_url_schemes = ('http', 'https', 'mailto')
 
 # sphinx-copybutton configurations
