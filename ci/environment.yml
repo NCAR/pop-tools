@@ -6,7 +6,6 @@ dependencies:
   - codecov
   - dask>=2.14
   - docrep==0.2.7
-  - nbsphinx
   - netcdf4
   - numba>=0.52
   - pip
@@ -17,3 +16,4 @@ dependencies:
   - xarray>=0.16.1
   - xgcm
   - watermark
+  - pre-commit
