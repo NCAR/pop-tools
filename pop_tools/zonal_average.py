@@ -101,7 +101,7 @@ def _generate_weights(src_grid, dst_grid, method, weight_file=None):
     # Check to see if the weights file already exists - if not, generate weights
     if not os.path.exists(weight_file):
         regridder = xe.Regridder(src_grid, dst_grid, method)
-        print('Saving weights file...')
+        print(f'Saving weights file: {os.path.abspath(weight_file)}')
         regridder.to_netcdf(weight_file)
 
     else:
