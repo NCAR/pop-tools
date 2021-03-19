@@ -206,7 +206,7 @@ class Regridder:
         """generic interface for regridding DataArray or Dataset"""
         if isinstance(obj, xr.Dataset):
             ds_list = []
-            for var in obj.variables:
+            for var in obj:  # only data variables
 
                 # Make sure the variable has the correct dimensions, is not a coordinate, and is not a velocity
                 if (
