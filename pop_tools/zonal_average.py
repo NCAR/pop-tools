@@ -4,8 +4,8 @@ import warnings
 import numpy as np
 import xarray as xr
 import xesmf as xe
-
-from .grid import get_grid
+from grid import get_grid
+from tqdm import tqdm
 
 
 def _generate_dest_grid(dy=None, dx=None, method_gen_grid='regular_lat_lon'):
@@ -173,7 +173,12 @@ class Regridder:
         # If the user does not input a mask, use default mask
         if not mask:
             self.mask = self.grid['REGION_MASK']
-            self.mask_labels = self.grid['region_name']
+
+            if 'region_name' not in self.grid.variables:
+                self.mask_labels = np.unique(self.mask.values)
+
+            else:
+                self.mask_labels = self.grid['region_name']
 
         else:
             self.mask = mask
@@ -200,7 +205,17 @@ class Regridder:
     def regrid(self, obj, **kwargs):
         """generic interface for regridding DataArray or Dataset"""
         if isinstance(obj, xr.Dataset):
-            return obj.map(self._regrid_dataarray, keep_attrs=True, **kwargs)
+            ds_list = []
+            for var in obj.variables:
+
+                # Make sure the variable has the correct dimensions, is not a coordinate, and is not a velocity
+                if (
+                    ('nlat' and 'nlon' in obj[var].dims)
+                    and (var not in list(obj.coords))
+                    and ('velocity' not in obj[var].long_name.lower())
+                ):
+                    ds_list.append(obj[var])
+            return xr.merge(ds_list).map(self._regrid_dataarray, keep_attrs=True, **kwargs)
         elif isinstance(obj, xr.DataArray):
             return self._regrid_dataarray(obj, **kwargs)
         raise TypeError('input data must be xarray DataArray or xarray Dataset!')
@@ -212,7 +227,7 @@ class Regridder:
 
         # Store the various datasets seperated by basin in this list
         ds_list = []
-        for region in np.unique(mask):
+        for region in tqdm(np.unique(mask)):
 
             if region != 0:
                 ds_list.append(data.where(mask == region).groupby('lat').mean())
@@ -227,6 +242,6 @@ class Regridder:
             out = out.weighted(out['z_t'].fillna(0)).mean(dim=['z_t'])
 
         # Add in the region name
-        out['region_name'] = data.region_name
+        out['region_name'] = self.grid.region_name
 
         return out
