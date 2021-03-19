@@ -31,7 +31,7 @@ def _generate_dest_grid(dy=None, dx=None, method_gen_grid='regular_lat_lon'):
 
     # Able to add other options at a later point
     else:
-        raise ValueError('Input method_gen_grid not supported')
+        raise ValueError(f'Input method_gen_grid: {method_gen_dir} is not supported.')
 
     # Use xESMF to generate the destination grid
     return xe.util.grid_global(dx, dy)
