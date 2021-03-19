@@ -17,3 +17,4 @@ dependencies:
   - xgcm
   - watermark
   - pre-commit
+  - xesmf>=0.5.2

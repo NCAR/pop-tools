@@ -14,6 +14,7 @@ dependencies:
   - scipy
   - toolz
   - pre-commit
+  - xesmf>=0.5.2
   - pip:
       - git+https://github.com/pydata/xarray.git#egg=xarray
       - git+https://github.com/dask/dask.git#egg=dask

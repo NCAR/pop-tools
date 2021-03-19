@@ -30,8 +30,9 @@ def _generate_dest_grid(dy=None, dx=None, method_gen_grid='regular_lat_lon'):
             dx = dy
 
     # Able to add other options at a later point
+    else:
+        raise ValueError('Input method_gen_grid not supported')
 
-    # Check to see if there is a weights file already existing
     # Use xESMF to generate the destination grid
     return xe.util.grid_global(dx, dy)
 
@@ -44,9 +45,7 @@ def _get_default_filename(src_grid, dst_grid, method):
     # Get the destination grid shape
     dst_shape = dst_grid.lat.shape
 
-    filename = '{0}_{1}x{2}_{3}x{4}.nc'.format(
-        method, src_shape[0], src_shape[1], dst_shape[0], dst_shape[1]
-    )
+    filename = f'{method}_{src_shape[0]}x{src_shape[1]}_{dst_shape[0]}x{dst_shape[1]}.nc'
 
     return filename
 
@@ -90,7 +89,7 @@ def _convert_to_xesmf(data_ds, grid_ds):
     return out_ds
 
 
-def _generate_weights(src_grid, dst_grid, method, weight_file=None, clobber=False):
+def _generate_weights(src_grid, dst_grid, method, weight_file=None):
     """
     Generate regridding weights by calling xESMF
     """
@@ -100,18 +99,21 @@ def _generate_weights(src_grid, dst_grid, method, weight_file=None, clobber=Fals
         weight_file = _get_default_filename(src_grid, dst_grid, method)
 
     # Check to see if the weights file already exists - if not, generate weights
-    if not os.path.exists(weight_file) or clobber:
-        xe.Regridder(src_grid, dst_grid, method).to_netcdf(weight_file)
+    if not os.path.exists(weight_file):
+        regridder = xe.Regridder(src_grid, dst_grid, method)
+        print('Saving weights file...')
+        regridder.to_netcdf(weight_file)
 
-    regridder = xe.Regridder(src_grid, dst_grid, method, weights=weight_file)
+    else:
+        regridder = xe.Regridder(src_grid, dst_grid, method, weights=weight_file)
 
     return regridder
 
 
-class regridder(object):
+class Regridder:
     def __init__(
         self,
-        grid_name,
+        grid_name=None,
         grid=None,
         dx=None,
         dy=None,
@@ -125,7 +127,26 @@ class regridder(object):
 
         Parameters
         ----------
-        grid_name
+        grid_name: string
+          POP grid name (ex. 'POP_gx1v6')
+
+        grid: `xarray.Dataset`
+          User defined grid containing metadata typically found in POP grid
+
+        dx: float
+          Horizontal grid spacing in x-direction for output grid in degrees
+
+        dy: float
+          Horizontal grid spacing in y-direction for output grid in degrees
+
+        mask: `xarray.Dataarray`
+          User defined region mask
+
+        regrid_method: string
+          Regridding method to be used within xESMF (default is conservative)
+
+        method_gen_grid: string
+          Method used to generate the output grid - default is a regular lat/lon grid
         """
         if grid_name is not None:
             self.grid_name = grid_name
@@ -182,10 +203,9 @@ class regridder(object):
             return obj.map(self._regrid_dataarray, keep_attrs=True, **kwargs)
         elif isinstance(obj, xr.DataArray):
             return self._regrid_dataarray(obj, **kwargs)
-        else:
-            raise ValueError('unknown type')
+        raise TypeError('input data must be xarray DataArray or xarray Dataset!')
 
-    def za(self, obj, vertical_average=False, **kwargs):
+    def zonal_average(self, obj, vertical_average=False, **kwargs):
 
         data = self.regrid(obj, **kwargs)
         mask = self.regrid(self.mask, regrid_method='nearest_s2d', **kwargs)
