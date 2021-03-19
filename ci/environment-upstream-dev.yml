@@ -13,6 +13,7 @@ dependencies:
   - pyyaml>=5.3.1
   - scipy
   - toolz
+  - zarr
   - pip:
       - git+https://github.com/pydata/xarray.git#egg=xarray
       - git+https://github.com/dask/dask.git#egg=dask
