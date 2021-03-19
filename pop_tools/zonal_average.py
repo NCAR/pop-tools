@@ -210,9 +210,8 @@ class Regridder:
 
                 # Make sure the variable has the correct dimensions, is not a coordinate, and is not a velocity
                 if (
-                    ('nlat' and 'nlon' in obj[var].dims)
-                    and (var not in list(obj.coords))
-                    and ('velocity' not in obj[var].long_name.lower())
+                    ('nlat' in obj[var].dims and 'nlon' in obj[var].dims)
+                    and ('ULONG' not in obj[var].attrs["coordinates"] and 'ULAT' not in obj[var].attrs["coordinates"])
                 ):
                     ds_list.append(obj[var])
             return xr.merge(ds_list).map(self._regrid_dataarray, keep_attrs=True, **kwargs)
