@@ -3,9 +3,19 @@ import warnings
 
 import numpy as np
 import xarray as xr
-import xesmf as xe
-from grid import get_grid
+
+try:
+    import xesmf as xe
+except ImportError:
+    message = 'Zonal averaging requires xesmf package.\n\n'
+    'Please conda install as follows:\n\n'
+    ' conda install -c conda-forge xesmf>=0.4.0'
+
+    raise ImportError(message)
+
 from tqdm import tqdm
+
+from .. import get_grid, region_mask_3d
 
 
 def _generate_dest_grid(dy=None, dx=None, method_gen_grid='regular_lat_lon'):
@@ -31,7 +41,7 @@ def _generate_dest_grid(dy=None, dx=None, method_gen_grid='regular_lat_lon'):
 
     # Able to add other options at a later point
     else:
-        raise ValueError(f'Input method_gen_grid: {method_gen_dir} is not supported.')
+        raise ValueError(f'Input method_gen_grid: {method_gen_grid} is not supported.')
 
     # Use xESMF to generate the destination grid
     return xe.util.grid_global(dx, dy)
@@ -117,7 +127,7 @@ class Regridder:
         grid=None,
         dx=None,
         dy=None,
-        mask=None,
+        mask=True,
         regrid_method='conservative',
         method_gen_grid='regular_lat_lon',
     ):
@@ -140,7 +150,7 @@ class Regridder:
           Horizontal grid spacing in y-direction for output grid in degrees
 
         mask: `xarray.Dataarray`
-          User defined region mask
+          Flag whether to use mask, can also be user defined region mask
 
         regrid_method: string
           Regridding method to be used within xESMF (default is conservative)
@@ -170,18 +180,14 @@ class Regridder:
         # Set the grid generation method
         self.method_gen_grid = method_gen_grid
 
-        # If the user does not input a mask, use default mask
-        if not mask:
-            self.mask = self.grid['REGION_MASK']
+        # Use the region 3d mask provided in pop-tools
 
-            if 'region_name' not in self.grid.variables:
-                self.mask_labels = np.unique(self.mask.values)
-
-            else:
-                self.mask_labels = self.grid['region_name']
+        if mask:
+            self.mask = region_mask_3d(grid_name, mask_name='default')
+            self.mask.name = 'region_mask'
 
         else:
-            self.mask = mask
+            return ValueError('Failed to specify whether to use mask')
 
     # Setup method for regridding a dataarray
     def _regrid_dataarray(self, da_in, regrid_mask=False, regrid_method=None):
@@ -205,16 +211,16 @@ class Regridder:
     def regrid(self, obj, **kwargs):
         """generic interface for regridding DataArray or Dataset"""
         if isinstance(obj, xr.Dataset):
-            ds_list = []
+            var_list = list([])
             for var in obj:  # only data variables
 
                 # Make sure the variable has the correct dimensions, is not a coordinate, and is not a velocity
-                if (
-                    ('nlat' in obj[var].dims and 'nlon' in obj[var].dims)
-                    and ('ULONG' not in obj[var].attrs["coordinates"] and 'ULAT' not in obj[var].attrs["coordinates"])
+                if ('nlat' in obj[var].dims and 'nlon' in obj[var].dims) and (
+                    'ULONG' not in obj[var].cf.coords['longitude'].name
+                    and 'ULAT' not in obj[var].cf.coords['latitude'].name
                 ):
-                    ds_list.append(obj[var])
-            return xr.merge(ds_list).map(self._regrid_dataarray, keep_attrs=True, **kwargs)
+                    var_list.append(var)
+            return obj[var_list].map(self._regrid_dataarray, keep_attrs=True, **kwargs)
         elif isinstance(obj, xr.DataArray):
             return self._regrid_dataarray(obj, **kwargs)
         raise TypeError('input data must be xarray DataArray or xarray Dataset!')
@@ -224,23 +230,16 @@ class Regridder:
         data = self.regrid(obj, **kwargs)
         mask = self.regrid(self.mask, regrid_method='nearest_s2d', **kwargs)
 
-        # Store the various datasets seperated by basin in this list
-        ds_list = []
-        for region in tqdm(np.unique(mask)):
+        # Attach a name to the mask
+        mask.name = self.mask.name
 
-            if region != 0:
-                ds_list.append(data.where(mask == region).groupby('lat').mean())
-
-        # Merge the datasets
-        out = xr.concat(ds_list, dim='nreg')
+        # Replace zeros with nans and group into regions
+        out = mask.where(mask > 0) * data
 
         # Check to see if a weighted vertical average is needed
         if vertical_average:
 
-            # Run the vertical, weighted average
-            out = out.weighted(out['z_t'].fillna(0)).mean(dim=['z_t'])
-
-        # Add in the region name
-        out['region_name'] = self.grid.region_name
+            # Calculate the vertical weighte average based on depth of the layer
+            out = out.weighted(out.z_t.diff(dim='z_t')).mean(dim='z_t')
 
         return out
