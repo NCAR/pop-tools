@@ -46,9 +46,6 @@ def test_get_grid_to_netcdf():
             gridfile = f'{grid}_{format}.nc'
             ds.to_netcdf(gridfile, format=format)
             os.system(f'rm -f {gridfile}')
-        ds.info()
-        assert isinstance(ds, xr.Dataset)
-        print()
 
 
 def test_four_point_min_kmu():
