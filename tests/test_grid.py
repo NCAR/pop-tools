@@ -69,7 +69,9 @@ def test_four_point_min_kmu():
 def test_dzu_dzt():
 
     zstore = DATASETS.fetch('comp-grid.tx9.1v3.20170718.zarr.zip', processor=UnzipZarr())
-    ds = xr.open_zarr(zstore).sel(nlat=slice(100, 300))
+    # chunk size is 300 along nlat; make sure we cross at least
+    # one chunk boundary to test map_overlap
+    ds = xr.open_zarr(zstore).sel(nlat=slice(100, 350))
 
     dzu, dzt = pop_tools.grid.calc_dzu_dzt(ds)
     # northernmost row will be wrong since we are working on a subset
