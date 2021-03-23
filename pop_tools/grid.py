@@ -468,6 +468,7 @@ def _compute_corners(ULAT, ULONG):
 @guvectorize(
     [
         (int_[:, :], int_[:, :]),
+        (float_[:, :], float_[:, :]),
         (double[:, :], double[:, :]),
     ],
     '(n,m)->(n,m)',
@@ -486,7 +487,7 @@ def numba_4pt_min(var, out):
     Expects and returns a 2d numpy array
     """
     dim1, dim0 = var.shape
-    out[:] = np.full_like(var, fill_value=0)
+    out[:] = 0
 
     for j in prange(dim1 - 1):
         for i in prange(dim0 - 1):
@@ -526,10 +527,12 @@ def four_point_min(array, dims=('nlat', 'nlon')):
 
     array = array.transpose(..., *dims)
     data = array.data
-    depth = {-1: (0, 1), -2: (0, 1)}
+
+    # map_overlap does not support negative axes :/
+    depth = {array.ndim - 2: (0, 1), array.ndim - 1: (0, 1)}
 
     if dask.is_dask_collection(data):
-        result = data.map_overlap(numba_4pt_min, depth=depth, boundary='none', dtype=data.dtype)
+        result = data.map_overlap(numba_4pt_min, depth=depth, boundary='none', meta=data._meta)
     else:
         result = numba_4pt_min(data)
 
