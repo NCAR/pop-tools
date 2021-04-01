@@ -220,6 +220,7 @@ class Regridder:
                     and 'ULAT' not in obj[var].cf.coords['latitude'].name
                 ):
                     var_list.append(var)
+
             return obj[var_list].map(self._regrid_dataarray, keep_attrs=True, **kwargs)
         elif isinstance(obj, xr.DataArray):
             return self._regrid_dataarray(obj, **kwargs)
@@ -240,6 +241,6 @@ class Regridder:
         if vertical_average:
 
             # Calculate the vertical weighte average based on depth of the layer
-            out = out.weighted(out.z_t.diff(dim='z_t')).mean(dim='z_t')
+            out = out.weighted(self.grid.dz).mean(dim='z_t')
 
         return out
