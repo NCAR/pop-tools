@@ -1,6 +1,7 @@
 name: pop-tools-dev
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
   - bottleneck
   - codecov
