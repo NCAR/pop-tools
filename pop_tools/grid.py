@@ -591,7 +591,12 @@ def calc_dzu_dzt(grid):
     # set values at KMT to DZBC, else, use existing nominal dz
     DZT = xr.where(fortran_zindex == KMT, DZBC, dz)
     DZT.name = 'DZT'
-    DZT.attrs = {'long_name': 'Thickness of T cells', **zunit, 'grid_loc': '3111'}
+    DZT.attrs = {
+        'standard_name': 'cell_thickness',
+        'long_name': 'Thickness of T cells',
+        **zunit,
+        'grid_loc': '3111',
+    }
 
     if 'nlon_t' in DZT.dims:
         raise ValueError('datasets renamed for xgcm are not allowed.')
@@ -605,6 +610,11 @@ def calc_dzu_dzt(grid):
     # so that we can run tests and users can check against existing code
     DZU = xr.where(fortran_zindex >= KMU, DZT, DZU)
     DZU.name = 'DZU'
-    DZU.attrs = {'long_name': 'Thickness of U cells', **zunit, 'grid_loc': '3221'}
+    DZU.attrs = {
+        'standard_name': 'cell_thickness',
+        'long_name': 'Thickness of U cells',
+        **zunit,
+        'grid_loc': '3221',
+    }
 
     return DZT, DZU
