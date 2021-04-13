@@ -45,6 +45,8 @@ xgcm utilities
 
 .. currentmodule:: pop_tools
 
+.. autofunction:: calc_dzu_dzt
+
 .. autofunction:: get_grid
 
 .. autofunction:: eos
