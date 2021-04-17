@@ -20,6 +20,15 @@ Equation of State
    eos
    compute_pressure
 
+
+Calculations
+~~~~~~~~~~~~
+
+.. autosummary::
+   cfc12sol
+   cfc11sol
+   
+
 Region masks
 ~~~~~~~~~~~~
 
