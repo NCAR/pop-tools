@@ -13,6 +13,7 @@ Grid
 .. autosummary::
    get_grid
 
+
 Equation of State
 ~~~~~~~~~~~~~~~~~
 
@@ -25,9 +26,9 @@ Calculations
 ~~~~~~~~~~~~
 
 .. autosummary::
-   cfc12sol
    cfc11sol
-   
+   cfc12sol
+
 
 Region masks
 ~~~~~~~~~~~~
