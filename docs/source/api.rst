@@ -13,12 +13,22 @@ Grid
 .. autosummary::
    get_grid
 
+
 Equation of State
 ~~~~~~~~~~~~~~~~~
 
 .. autosummary::
    eos
    compute_pressure
+
+
+Calculations
+~~~~~~~~~~~~
+
+.. autosummary::
+   cfc11sol
+   cfc12sol
+
 
 Region masks
 ~~~~~~~~~~~~
