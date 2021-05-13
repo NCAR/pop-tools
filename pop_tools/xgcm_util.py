@@ -93,10 +93,7 @@ def relabel_pop_dims(ds):
             da = ds_new[vname]
             dims_orig = da.dims
             new_spatial_dims = _dims_from_grid_loc(da.attrs['grid_loc'])
-            if dims_orig[0] == 'time':
-                dims = ('time',) + new_spatial_dims
-            else:
-                dims = new_spatial_dims
+            dims = dims_orig[: -len(new_spatial_dims)] + new_spatial_dims
             ds_new[vname] = xr.Variable(dims, da.data, da.attrs, da.encoding, fastpath=True)
     old_coords = ['nlat', 'nlon']
     for coord in old_coords:
