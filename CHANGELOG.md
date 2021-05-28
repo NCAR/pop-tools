@@ -29,14 +29,14 @@
 - 📚 New docs theme & Add comments [#74](https://github.com/NCAR/pop-tools/pull/74) ([@andersy005](https://github.com/andersy005))
 - Use `execution_excludepatterns` to exclude long running notebooks [#76](https://github.com/NCAR/pop-tools/pull/76) ([@andersy005](https://github.com/andersy005))
 
-## Internal Changes
+### Internal Changes
 
 - Bump pre-commit/action from v2.0.2 to v2.0.3 [#92](https://github.com/NCAR/pop-tools/pull/92) ([@dependabot](https://github.com/dependabot))
 - Bump pre-commit/action from v2.0.0 to v2.0.2 [#90](https://github.com/NCAR/pop-tools/pull/90) ([@dependabot](https://github.com/dependabot))
 - Bump styfle/cancel-workflow-action from 0.8.0 to 0.9.0 [#89](https://github.com/NCAR/pop-tools/pull/89) ([@dependabot](https://github.com/dependabot))
 - Update CI [#78](https://github.com/NCAR/pop-tools/pull/78) ([@andersy005](https://github.com/andersy005))
 
-## Contributors to this release
+### Contributors to this release
 
 ([GitHub contributors page for this release](https://github.com/NCAR/pop-tools/graphs/contributors?from=2020-12-15&to=2021-05-29&type=c))
 
