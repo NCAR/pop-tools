@@ -51,6 +51,7 @@ xgcm utilities
 .. autosummary::
    to_xgcm_grid_dataset
 
+
 .. currentmodule:: pop_tools
 
 .. autofunction:: get_grid
@@ -66,3 +67,7 @@ xgcm utilities
 .. autofunction:: lateral_fill
 
 .. autofunction:: to_xgcm_grid_dataset
+
+.. autofunction:: cfc11sol
+
+.. autofunction:: cfc12sol
