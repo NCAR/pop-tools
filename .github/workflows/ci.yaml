@@ -39,7 +39,7 @@ jobs:
           python -m pytest --cov=./ --cov-report=xml --verbose
 
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@2.0.0
+        uses: codecov/codecov-action@2.0.1
         with:
           file: ./coverage.xml
           flags: unittests
