@@ -222,11 +222,11 @@ def zonal_average(data, mask_grid_name):
     # Convert the mask to a uniform grid, using nearest neighbor interpolation
     mask_regrid = to_uniform_grid(grid_ds[['REGION_MASK']], regrid_method='nearest_s2d')
 
-    ds_list = []
-    for region in tqdm(np.unique(mask_regrid.REGION_MASK)):
-
-        if region != 0:
-            ds_list.append(data_regrid.where(mask_regrid.REGION_MASK == region).mean('lon'))
+    ds_list = [
+        data_regrid.where(mask_regrid.REGION_MASK == region).mean('lon')
+        for region in tqdm(np.unique(mask_regrid.REGION_MASK))
+        if region != 0
+    ]
 
     # Merge the datasets
     out = xr.concat(ds_list, dim='region')
