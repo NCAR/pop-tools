@@ -183,7 +183,7 @@ def to_uniform_grid(obj, dx=0.25, dy=0.25, regrid_method='conservative', **kwarg
             else:
                 None
 
-        if len(scalar_vars) > 0:
+        if scalar_vars:
             out = _regrid_dataset(obj[scalar_vars], dst_grid, regrid_method)
 
         else:
