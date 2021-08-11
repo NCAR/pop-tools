@@ -32,16 +32,14 @@ def _generate_dest_grid(dy=None, dx=None, method_gen_grid='regular_lat_lon'):
     """
 
     # Use regular lat/lon with regular spacing
-    if method_gen_grid == 'regular_lat_lon':
-        if dy is None:
-            dy = 0.25
-
-        if dx is None:
-            dx = dy
-
-    # Able to add other options at a later point
-    else:
+    if method_gen_grid != 'regular_lat_lon':
         raise ValueError(f'Input method_gen_grid: {method_gen_grid} is not supported.')
+
+    if dy is None:
+        dy = 0.25
+
+    if dx is None:
+        dx = dy
 
     # Use xESMF to generate the destination grid
     return xe.util.grid_global(dx, dy)
