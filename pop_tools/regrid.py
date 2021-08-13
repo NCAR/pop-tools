@@ -240,7 +240,6 @@ def gen_dest_grid(
     reg_grid = xe.util.grid_global(dx, dy)
 
     if method == 'regular_grid':
-        print(dx, dy)
         out_ds = reg_grid
 
     elif method == 'lat_axis':
@@ -353,7 +352,7 @@ def zonal_average(
     grid_name: str
            POP-grid name
 
-    dest_grid_method: str, default = 'regular_grid'
+    dest_grid_method: str, {'regular_grid', 'lat_aux_grid'}, default = 'regular_grid'
        Method to use for generating the destination grid. Two main options include 'regular grid',
        which is regular lat-lon grid, or 'lat_axis' which uses the 'lat_aux_grid' specified in the file
 
@@ -361,7 +360,7 @@ def zonal_average(
        Latitude axis to use for regridding
 
     lat_axis_bnds: list, array, optional
-       Latitude axis to use for regridding
+       Latitude axis bounds to use for regridding
 
     lon_axis: list, array, optional
        Longitudinal axis to use for regridding
@@ -397,7 +396,6 @@ def zonal_average(
     dst_grid = gen_dest_grid(
         dest_grid_method, dx, dy, lat_axis_bnds, lat_axis, lon_axis_bnds, lon_axis
     )
-    print(data, dst_grid)
 
     # Convert the mask to a uniform grid, using nearest neighbor interpolation
     mask_regrid = to_uniform_grid(
@@ -407,7 +405,6 @@ def zonal_average(
         data[['REGION_MASK']], dst_grid, regrid_method='conservative'
     ).REGION_MASK
 
-    print(np.unique(mask_regrid))
 
     # Add a mask to the regridding
     dst_grid['mask'] = (('y', 'x'), (mask_regrid.where(mask_regrid == 0, 1, 0)))
