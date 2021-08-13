@@ -405,7 +405,6 @@ def zonal_average(
         data[['REGION_MASK']], dst_grid, regrid_method='conservative'
     ).REGION_MASK
 
-
     # Add a mask to the regridding
     dst_grid['mask'] = (('y', 'x'), (mask_regrid.where(mask_regrid == 0, 1, 0)))
 
