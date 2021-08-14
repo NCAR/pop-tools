@@ -1,6 +1,7 @@
 import os
 import warnings
 
+import cf_xarray
 import numpy as np
 import xarray as xr
 
@@ -110,10 +111,10 @@ def _regrid_dataset(da_in, dst_grid, regrid_method=None):
 
     # If the user does not specify a regridding method, use default conservative
     if regrid_method is None:
-        regridder = _generate_weights(src_grid, dst_grid, 'conservative')
+        regridder = _generate_weights(src_grid, dst_grid, method='conservative')
 
     else:
-        regridder = _generate_weights(src_grid, dst_grid, regrid_method)
+        regridder = _generate_weights(src_grid, dst_grid, method=regrid_method)
 
     # Regrid the input data array, assigning the original attributes
     da_out = regridder(src_grid)
@@ -262,8 +263,8 @@ def gen_dest_grid(
         else:
             raise TypeError('Missing defined longitude axis bounds')
 
-        lons, lats = np.meshgrid(sorted(lon), lat)
-        lons_b, lats_b = np.meshgrid(sorted(lon_b), lat_b)
+        lons, lats = np.meshgrid(lon, lat)
+        lons_b, lats_b = np.meshgrid(lon_b, lat_b)
 
         out_ds['lat'] = (('y', 'x'), lats)
         out_ds['lon'] = (('y', 'x'), lons)
@@ -278,7 +279,7 @@ def gen_dest_grid(
     return out_ds.set_coords(['lat', 'lat_b', 'lon', 'lon_b'])
 
 
-def to_uniform_grid(obj, dst_grid, regrid_method='conservative', **kwargs):
+def to_uniform_grid(obj, dst_grid, regrid_method='conservative'):
     """
     Transform the POP C-Grid to a regular lat-lon grid, using similar grid spacing
 
@@ -304,13 +305,12 @@ def to_uniform_grid(obj, dst_grid, regrid_method='conservative', **kwargs):
         scalar_vars = []
 
         for var in obj:
-            if 'nlat' in obj[var].dims and 'nlon' in obj[var].dims:
+            if 'nlat' in obj[var].dims and 'nlon' in obj[var].dims and obj[var].cf['latitude'].name:
 
-                if obj[var].cf['latitude'].name == 'TLAT':
-                    scalar_vars.append(var)
+                scalar_vars.append(var)
 
             else:
-                None
+                pass
 
         if scalar_vars:
             out = _regrid_dataset(obj[scalar_vars], dst_grid, regrid_method)
@@ -321,7 +321,7 @@ def to_uniform_grid(obj, dst_grid, regrid_method='conservative', **kwargs):
         return out
 
     elif isinstance(obj, xr.DataArray):
-        return _regrid_dataset(obj, dst_grid, **kwargs)
+        return _regrid_dataset(obj, dst_grid, regrid_method)
 
     raise TypeError('input data must be xarray DataArray or xarray Dataset!')
 
@@ -382,12 +382,6 @@ def zonal_average(
     ):
         lat_axis_bnds = data.lat_aux_grid.values
 
-    # If no longitude axis specified, calulate the grid corners and use the longitudinal grid in the southern hemisphere
-    # if lon_axis is None:
-    #    lat_c, lon_c = gen_corner_calc(data)
-    #    lon_axis_bnds = lon_c[0, :]
-    #    lon_axis = data.TLONG.values[0, :]
-
     # Generate the destination grid
     dst_grid = gen_dest_grid(
         dest_grid_method, dx, dy, lat_axis_bnds, lat_axis, lon_axis_bnds, lon_axis
@@ -402,15 +396,13 @@ def zonal_average(
     ).REGION_MASK
 
     # Add a mask to the regridding
-    dst_grid['mask'] = (('y', 'x'), (mask_regrid.where(mask_regrid == 0, 1, 0)))
+    dst_grid['mask'] = np.logical_not(mask_regrid)
 
     # Convert the data to a uniform grid, using default conservative regridding
     data_regrid = to_uniform_grid(data, dst_grid)
 
     ds_list = [
-        data_regrid.where(mask_regrid == region)
-        .weighted(weights_regrid.where(mask_regrid == region).fillna(0))
-        .mean('x')
+        data_regrid.where(mask_regrid == region).weighted(weights_regrid).mean('x')
         for region in tqdm(np.unique(mask_regrid))
         if region != 0
     ]
