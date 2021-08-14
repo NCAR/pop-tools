@@ -191,7 +191,7 @@ def _prep_for_xesmf(ds, grid, lat_axis=None, cell_center='TLAT', cell_corners='U
         )
 
     else:
-        return TypeError('Does not support center coordinates other than TLAT')
+        return ValueError('Does not support center coordinates other than TLAT')
 
     # Rename the dimensions
     ds = ds.rename({'TLAT': 'lat', 'TLONG': 'lon', 'ULAT': 'lat_b', 'ULONG': 'lon_b'})
