@@ -245,17 +245,15 @@ def gen_dest_grid(
     elif method == 'lat_axis':
         out_ds = xr.Dataset()
 
-        if lat_axis_bnds is not None:
-            lat_b = lat_axis_bnds
-
-            if lat_axis is not None:
-                lat = lat_axis
-
-            else:
-                lat = (lat_axis_bnds[1:] + lat_axis_bnds[:-1]) / 2
-
-        else:
+        if lat_axis_bnds is None:
             raise TypeError('Missing defined latitude axis bounds')
+        lat_b = lat_axis_bnds
+        if lat_axis is not None:
+           lat = lat_axis
+        else:
+           lat = (lat_axis_bnds[1:] + lat_axis_bnds[:-1]) / 2
+
+            
 
         if lon_axis_bnds is None:
             lon_b = reg_grid.lon_b.values[0, :]
