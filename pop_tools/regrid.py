@@ -286,13 +286,13 @@ def to_uniform_grid(obj, dst_grid, regrid_method='conservative', **kwargs):
     ----------
     obj: `xarray.Dataset` or `xarray.DataArray`
          Input dataset or dataarray to regrid
-    dx = float
-         Longitudinal grid spacing for output grid
+    dx : float
+         Longitudinal grid spacing for the output grid
 
-    dy = float
-         Latitudinal grid spacing for output grid
+    dy : float
+         Latitudinal grid spacing for the output grid
 
-    regrid_method = str
+    regrid_method : str
          Regridding method for xESMF, default is conservative
 
     **kwargs
