@@ -19,5 +19,5 @@ dependencies:
   - watermark
   - pre-commit
   - xesmf>=0.5.2
-  - cf-xarray
+  - cf_xarray
   - tqdm
