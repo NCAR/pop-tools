@@ -249,11 +249,9 @@ def gen_dest_grid(
             raise TypeError('Missing defined latitude axis bounds')
         lat_b = lat_axis_bnds
         if lat_axis is not None:
-           lat = lat_axis
+            lat = lat_axis
         else:
-           lat = (lat_axis_bnds[1:] + lat_axis_bnds[:-1]) / 2
-
-            
+            lat = (lat_axis_bnds[1:] + lat_axis_bnds[:-1]) / 2
 
         if lon_axis_bnds is None:
             lon_b = reg_grid.lon_b.values[0, :]
