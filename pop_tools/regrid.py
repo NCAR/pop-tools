@@ -305,7 +305,11 @@ def to_uniform_grid(obj, dst_grid, regrid_method='conservative'):
         scalar_vars = []
 
         for var in obj:
-            if 'nlat' in obj[var].dims and 'nlon' in obj[var].dims and obj[var].cf['latitude'].name:
+            if (
+                'nlat' in obj[var].dims
+                and 'nlon' in obj[var].dims
+                and obj[var].cf['latitude'].name == 'TLAT'
+            ):
 
                 scalar_vars.append(var)
 
