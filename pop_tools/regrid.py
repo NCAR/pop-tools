@@ -61,8 +61,6 @@ def _add_region_mask(ds, grid, cell_center='TLAT'):
     """
 
     # Grab the associated grid
-    if not grid:
-        raise TypeError('User did not input a grid to use')
     else:
         grid = get_grid(grid)
 
