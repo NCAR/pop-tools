@@ -60,9 +60,7 @@ def _add_region_mask(ds, grid, cell_center='TLAT'):
     Grabs and combines a grid
     """
 
-    # Grab the associated grid
-    else:
-        grid = get_grid(grid)
+    grid = get_grid(grid)
 
     return xr.merge([ds, grid[['REGION_MASK', 'region_name']]])
 
