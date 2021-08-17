@@ -85,7 +85,13 @@ def _generate_weights(src_grid, dst_grid, method, weight_file=None):
 
     # Allow user to input weights file, if there is not one, use default check
     if weight_file is None:
-        weight_file = _get_default_filename(src_grid, dst_grid, method)
+        # Get the source grid shape
+        src_shape = src_grid.lat.shape
+
+        # Get the destination grid shape
+        dst_shape = dst_grid.lat.shape
+
+        weight_file = f'{method}_{src_shape[0]}x{src_shape[1]}_{dst_shape[0]}x{dst_shape[1]}.nc'
 
     # Check to see if the weights file already exists - if not, generate weights
     if not os.path.exists(weight_file):
@@ -102,7 +108,7 @@ def _generate_weights(src_grid, dst_grid, method, weight_file=None):
 
 
 # Setup method for regridding a dataarray
-def _regrid_dataset(da_in, dst_grid, regrid_method="conservative"):
+def _regrid_dataset(da_in, dst_grid, regrid_method='conservative'):
     src_grid = _convert_to_xesmf(da_in)
 
     # If the user does not specify a regridding method, use default conservative
@@ -204,7 +210,7 @@ def gen_dest_grid(
     Parameters
     ----------
     method: str
-       Method to use for generating the destination grid, options include 'regular_grid' or 'define_lat_aux'
+       Method to use for generating the destination grid, options include 'regular_grid' or 'lat_axis'
 
     dx: float default = 0.25
        Longitudinal grid spacing to use in regular grid
@@ -235,7 +241,7 @@ def gen_dest_grid(
     if method == 'regular_grid':
         out_ds = reg_grid
 
-    elif method == 'lat_axis':
+    elif method == 'lat_aux_grid':
         out_ds = xr.Dataset()
 
         if lat_axis_bnds is None:
@@ -265,13 +271,13 @@ def gen_dest_grid(
 
     else:
         raise ValueError(
-            f'Expected method to be one of ('regular_grid', 'define_lat_aux'). Received {method} instead.
+            f"Expected method to be one of ('regular_grid', 'define_lat_aux'). Received {method} instead."
         )
 
     return out_ds.set_coords(['lat', 'lat_b', 'lon', 'lon_b'])
 
 
-def to_uniform_grid(obj, dst_grid, method='conservative'):
+def to_uniform_grid(obj, dst_grid, regrid_method='conservative'):
     """
     Transform the POP C-Grid to a regular lat-lon grid, using similar grid spacing
 
@@ -325,7 +331,7 @@ def to_uniform_grid(obj, dst_grid, method='conservative'):
 def zonal_average(
     data,
     grid_name,
-    method='regular_grid',
+    dest_grid_method='regular_grid',
     lat_axis=None,
     lat_axis_bnds=None,
     lon_axis=None,
