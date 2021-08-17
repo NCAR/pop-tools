@@ -29,6 +29,9 @@ def gen_corner_calc(ds, cell_corner_lat='ULAT', cell_corner_lon='ULONG'):
     # Use the function in pop-tools to get the grid corner information
     corn_lat, corn_lon = _compute_corners(cell_corner_lat, cell_corner_lon)
 
+    # Make sure this returns four corner points
+    assert corn_lon.shape[-1] == 4
+
     lon_shape, lat_shape = corn_lon[:, :, 0].shape
     out_shape = (lon_shape + 1, lat_shape + 1)
 
@@ -63,19 +66,6 @@ def _add_region_mask(ds, grid, cell_center='TLAT'):
     grid = get_grid(grid)
 
     return xr.merge([ds, grid[['REGION_MASK', 'region_name']]])
-
-
-def _get_default_filename(src_grid, dst_grid, method):
-
-    # Get the source grid shape
-    src_shape = src_grid.lat.shape
-
-    # Get the destination grid shape
-    dst_shape = dst_grid.lat.shape
-
-    filename = f'{method}_{src_shape[0]}x{src_shape[1]}_{dst_shape[0]}x{dst_shape[1]}.nc'
-
-    return filename
 
 
 def _generate_weights(src_grid, dst_grid, method, weight_file=None):
@@ -118,7 +108,7 @@ def _regrid_dataset(da_in, dst_grid, regrid_method='conservative'):
     da_out = regridder(src_grid)
     da_out.attrs = da_in.attrs
 
-    return da_out.drop(['lat_b', 'lon_b'])
+    return da_out.drop_vars(['lat_b', 'lon_b'])
 
 
 def _convert_to_xesmf(ds):
@@ -199,7 +189,7 @@ def _prep_for_xesmf(ds, grid, lat_axis=None, cell_center='TLAT', cell_corners='U
     ds['lat_b'] = (['nlat_b', 'nlon_b'], corner_lats)
     ds['lon_b'] = (['nlat_b', 'nlon_b'], corner_lons)
 
-    return ds.set_coords(['lat', 'lon', 'lat_b', 'lon_b']).drop(['lat_aux_grid'])
+    return ds.set_coords(['lat', 'lon', 'lat_b', 'lon_b']).drop_vars(['lat_aux_grid'])
 
 
 def gen_dest_grid(
@@ -419,4 +409,4 @@ def zonal_average(
     out = out.rename({'y': 'lat'})
     out['lat'] = data_regrid.lat.values[:, 0]
 
-    return out.drop(['REGION_MASK'])
+    return out.drop_vars(['REGION_MASK'])
