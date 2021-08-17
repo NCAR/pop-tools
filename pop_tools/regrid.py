@@ -33,8 +33,8 @@ def gen_corner_calc(ds, cell_corner_lat='ULAT', cell_corner_lon='ULONG'):
     out_shape = (lon_shape + 1, lat_shape + 1)
 
     # Generate numpy arrays to store destination lats/lons
-    out_lons = np.zeros((out_shape))
-    out_lats = np.zeros((out_shape))
+    out_lons = np.zeros(out_shape)
+    out_lats = np.zeros(out_shape)
 
     # Assign the northeast corner information
     out_lons[1:, 1:] = corn_lon[:, :, 0]
@@ -102,15 +102,11 @@ def _generate_weights(src_grid, dst_grid, method, weight_file=None):
 
 
 # Setup method for regridding a dataarray
-def _regrid_dataset(da_in, dst_grid, regrid_method=None):
+def _regrid_dataset(da_in, dst_grid, regrid_method="conservative"):
     src_grid = _convert_to_xesmf(da_in)
 
     # If the user does not specify a regridding method, use default conservative
-    if regrid_method is None:
-        regridder = _generate_weights(src_grid, dst_grid, method='conservative')
-
-    else:
-        regridder = _generate_weights(src_grid, dst_grid, method=regrid_method)
+    regridder = _generate_weights(src_grid, dst_grid, method=regrid_method)
 
     # Regrid the input data array, assigning the original attributes
     da_out = regridder(src_grid)
@@ -268,14 +264,14 @@ def gen_dest_grid(
         out_ds['lon_b'] = (('y_b', 'x_b'), lons_b)
 
     else:
-        raise AttributeError(
-            'Method not supported - only supporting regular lat/lon and manually defined lat/lon aux grid'
+        raise ValueError(
+            f'Expected method to be one of ('regular_grid', 'define_lat_aux'). Received {method} instead.
         )
 
     return out_ds.set_coords(['lat', 'lat_b', 'lon', 'lon_b'])
 
 
-def to_uniform_grid(obj, dst_grid, regrid_method='conservative'):
+def to_uniform_grid(obj, dst_grid, method='conservative'):
     """
     Transform the POP C-Grid to a regular lat-lon grid, using similar grid spacing
 
@@ -316,7 +312,7 @@ def to_uniform_grid(obj, dst_grid, regrid_method='conservative'):
             out = _regrid_dataset(obj[scalar_vars], dst_grid, regrid_method)
 
         else:
-            raise AttributeError('Input no variables with nlat/nlon dimensions')
+            raise ValueError('Input has no variables at scalar points (TLON, TLAT)')
 
         return out
 
@@ -329,7 +325,7 @@ def to_uniform_grid(obj, dst_grid, regrid_method='conservative'):
 def zonal_average(
     data,
     grid_name,
-    dest_grid_method='regular_grid',
+    method='regular_grid',
     lat_axis=None,
     lat_axis_bnds=None,
     lon_axis=None,
@@ -376,7 +372,7 @@ def zonal_average(
 
     # Add the latitude axis if needed
     if (
-        (dest_grid_method == 'lat_axis')
+        (dest_grid_method == 'lat_aux_grid')
         and ('lat_aux_grid' in data.variables)
         and (lat_axis is None)
     ):
