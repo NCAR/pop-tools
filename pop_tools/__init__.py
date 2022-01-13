@@ -3,6 +3,7 @@
 
 from pkg_resources import DistributionNotFound, get_distribution
 
+from .calc import cfc11sol, cfc12sol
 from .datasets import DATASETS
 from .eos import compute_pressure, eos
 from .fill import lateral_fill, lateral_fill_np_array

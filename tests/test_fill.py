@@ -91,7 +91,7 @@ def test_lateral_fill_3D():
     field = ds.KMT.copy() * 1.0
     field = field.where(ds.KMT > 0)
     field.values[20:40, 80:] = np.nan
-    da_in = xr.DataArray(np.ones((3)), dims=('z_t')) * field
+    da_in = xr.DataArray(np.ones(3), dims=('z_t')) * field
     attrs = {'long_name': 'test field', 'units': 'none'}
     da_in.attrs = attrs
 
@@ -114,9 +114,7 @@ def test_lateral_fill_4D():
     field = field.where(ds.KMT > 0)
     field.values[20:40, 80:] = np.nan
 
-    da_in = (
-        xr.DataArray(np.ones((3)), dims=('time')) * xr.DataArray(np.ones((5)), dims=('z_t')) * field
-    )
+    da_in = xr.DataArray(np.ones(3), dims=('time')) * xr.DataArray(np.ones(5), dims=('z_t')) * field
 
     attrs = {'long_name': 'test field', 'units': 'none'}
     da_in.attrs = attrs
@@ -140,8 +138,8 @@ def test_lateral_fill_4D_3Dmask():
     field.values[20:40, 80:] = np.nan
 
     da_in = (
-        xr.DataArray(np.ones((3)), dims=('time'))
-        * xr.DataArray(np.ones((len(ds.z_t))), dims=('z_t'))
+        xr.DataArray(np.ones(3), dims=('time'))
+        * xr.DataArray(np.ones(len(ds.z_t)), dims=('z_t'))
         * field
     )
 
