@@ -13,4 +13,5 @@ pop_div_curl_xr_xgcm_metrics_compare.ipynb
 CloseHeatBudget_POP2.ipynb
 xgcm-transform.ipynb
 xoak-example.ipynb
+cesm-cmip-cf-xarray.ipynb
 ```

@@ -61,6 +61,7 @@ execution_timeout = 600
 execution_excludepatterns = [
     'examples/pop_div_curl_xr_xgcm_metrics_compare*',
     'examples/CloseHeatBudget_POP2*',
+    'examples/cesm-cmip-cf-xarray*',
 ]
 
 comments_config = {
