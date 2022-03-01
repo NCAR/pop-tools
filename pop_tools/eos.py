@@ -20,7 +20,7 @@ def compute_pressure(depth):
       Pressure in dbar
     """
     return (
-        0.059808 * (np.exp(-0.025 * depth) - 1.0) + 0.100766 * depth + 2.28405e-7 * (depth ** 2.0)
+        0.059808 * (np.exp(-0.025 * depth) - 1.0) + 0.100766 * depth + 2.28405e-7 * (depth**2.0)
     )
 
 
@@ -176,7 +176,7 @@ def _compute_eos(salt, temp, pressure):
     mwjfdp2s0t3 = -3.03175128e-16
     mwjfdp3s0t1 = -1.27934137e-17
 
-    salt2 = salt ** 0.5
+    salt2 = salt**0.5
 
     # compute density
     # *** first calculate numerator of MWJF density [P_1(S,T,p)]
@@ -196,9 +196,9 @@ def _compute_eos(salt, temp, pressure):
 
     # *** now calculate denominator of MWJF density [P_2(S,T,p)]
     mwjfdens0t0 = mwjfdp0s0t0 + pressure * mwjfdp1s0t0
-    mwjfdens0t1 = mwjfdp0s0t1 + (pressure ** 3) * mwjfdp3s0t1
+    mwjfdens0t1 = mwjfdp0s0t1 + (pressure**3) * mwjfdp3s0t1
     mwjfdens0t2 = mwjfdp0s0t2
-    mwjfdens0t3 = mwjfdp0s0t3 + (pressure ** 2) * mwjfdp2s0t3
+    mwjfdens0t3 = mwjfdp0s0t3 + (pressure**2) * mwjfdp2s0t3
     mwjfdens0t4 = mwjfdp0s0t4
     mwjfdens1t0 = mwjfdp0s1t0
     mwjfdens1t1 = mwjfdp0s1t1
@@ -254,7 +254,7 @@ def _compute_eos_coeffs(salt, temp, pressure):
     mwjfdp2s0t3 = -3.03175128e-16
     mwjfdp3s0t1 = -1.27934137e-17
 
-    salt2 = salt ** 0.5
+    salt2 = salt**0.5
 
     # compute density
     # *** first calculate numerator of MWJF density [P_1(S,T,p)]
@@ -274,9 +274,9 @@ def _compute_eos_coeffs(salt, temp, pressure):
 
     # *** now calculate denominator of MWJF density [P_2(S,T,p)]
     mwjfdens0t0 = mwjfdp0s0t0 + pressure * mwjfdp1s0t0
-    mwjfdens0t1 = mwjfdp0s0t1 + (pressure ** 3) * mwjfdp3s0t1
+    mwjfdens0t1 = mwjfdp0s0t1 + (pressure**3) * mwjfdp3s0t1
     mwjfdens0t2 = mwjfdp0s0t2
-    mwjfdens0t3 = mwjfdp0s0t3 + (pressure ** 2) * mwjfdp2s0t3
+    mwjfdens0t3 = mwjfdp0s0t3 + (pressure**2) * mwjfdp2s0t3
     mwjfdens0t4 = mwjfdp0s0t4
     mwjfdens1t0 = mwjfdp0s1t0
     mwjfdens1t1 = mwjfdp0s1t1
