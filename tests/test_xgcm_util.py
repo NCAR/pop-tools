@@ -50,3 +50,12 @@ def test_to_xgcm_grid_dataset_missing_xgcm():
             filepath = DATASETS.fetch('tend_zint_100m_Fe.nc')
             ds = xr.open_dataset(filepath)
             _, _ = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)
+
+
+def test_set_metrics():
+    from pop_tools.xgcm_util import get_metrics
+
+    ds = xr.Dataset({'DXU': 1, 'DYT': 2, 'DZT': 3})
+    actual = get_metrics(ds)
+    expected = {('X',): ['DXU'], ('Y',): ['DYT'], ('Z',): ['DZT']}
+    assert actual == expected

@@ -104,13 +104,34 @@ def relabel_pop_dims(ds):
     return ds_new
 
 
-def to_xgcm_grid_dataset(ds, **kwargs):
+def get_metrics(ds):
+    """Finds metrics variables present in `ds`, returns a dict that can be passed to xgcm."""
+    metrics = {
+        ('X',): ['DXU', 'DXT'],  # X distances
+        ('Y',): ['DYU', 'DYT'],  # Y distances
+        ('Z',): ['DZU', 'DZT'],  # Z distances
+        ('X', 'Y'): ['UAREA', 'TAREA'],  # Areas
+    }
+    # filter to variables that are present
+    new_metrics = {}
+    for axis, names in metrics.items():
+        new_names = [name for name in names if name in ds]
+        if new_names:
+            new_metrics[axis] = new_names
+    return metrics
+
+
+def to_xgcm_grid_dataset(ds, metrics=None, **kwargs):
     """Modify POP model output to be compatible with xgcm.
 
     Parameters
     ----------
     ds : xarray.Dataset
         An xarray Dataset
+    metrics : dict, optional
+        Dictionary providing metrics to the `xgcm.Grid` contructor.
+        If None, will autodetect metrics that are present by searching for
+        variables named DXU, DXT, DYU, DYT, DZU, DZT, UAREA, TAREA.
     kwargs:
        Additional keyword arguments are passed through to `xgcm.Grid` class.
 
@@ -204,5 +225,7 @@ def to_xgcm_grid_dataset(ds, **kwargs):
             """to_xgcm_grid_dataset() function requires the `xgcm` package. \nYou can install it via PyPI or Conda"""
         )
     ds_new = relabel_pop_dims(ds)
-    grid = xgcm.Grid(ds_new, **kwargs)
+    if metrics is None:
+        metrics = get_metrics(ds_new)
+    grid = xgcm.Grid(ds_new, metrics=metrics, **kwargs)
     return grid, ds_new
