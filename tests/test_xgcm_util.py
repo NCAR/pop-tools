@@ -74,13 +74,13 @@ def test_metrics_assignment(ds):
 
     if 'DXU' not in ds:
         # no metrics variables in ds_a
-        assert not grid._metrics
-    else:
-        actual = {
-            tuple(sorted(key)): [metric.name for metric in metrics]
-            for key, metrics in grid._metrics.items()
-        }
-        if 'S_FLUX_ROFF_VSF' in ds:
-            expected[('X', 'Y')] = ['TAREA']
-            expected[('X',)] = ['DXU']
-        assert actual == expected
+        expected = {}
+    elif 'S_FLUX_ROFF_VSF' in ds:
+        expected[('X', 'Y')] = ['TAREA']
+        expected[('X',)] = ['DXU']
+
+    actual = {
+        tuple(sorted(key)): [metric.name for metric in metrics]
+        for key, metrics in grid._metrics.items()
+    }
+    assert actual == expected
