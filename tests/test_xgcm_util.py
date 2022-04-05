@@ -63,16 +63,12 @@ def test_set_metrics():
     assert not get_metrics(xr.Dataset({}))
 
 
-@pytest.mark.parametrize(
-    'ds',
-    [ds_a, ds_b, ds_c],
-)
+@pytest.mark.parametrize('ds', [ds_a, ds_b, ds_c])
 def test_metrics_assignment(ds):
     grid, _ = pop_tools.to_xgcm_grid_dataset(ds)
     expected = {
         ('X',): ['DXU', 'DXT'],  # X distances
         ('Y',): ['DYU', 'DYT'],  # Y distances
-        # ('Z',): ['DZU', 'DZT'],  # Z distances
         ('X', 'Y'): ['UAREA', 'TAREA'],  # Areas
     }
 
