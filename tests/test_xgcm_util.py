@@ -33,7 +33,7 @@ ds_c['anom'] = xr.DataArray(
     ],
 )
 def test_to_xgcm_grid_dataset(ds, old_spatial_coords, axes):
-    grid, ds_new = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)
+    grid, ds_new = pop_tools.to_xgcm_grid_dataset(ds)
     assert isinstance(grid, xgcm.Grid)
     assert set(axes) == set(grid.axes.keys())
     new_spatial_coords = ['nlon_u', 'nlat_u', 'nlon_t', 'nlat_t']
@@ -49,7 +49,7 @@ def test_to_xgcm_grid_dataset_missing_xgcm():
         with mock.patch.dict(sys.modules, {'xgcm': None}):
             filepath = DATASETS.fetch('tend_zint_100m_Fe.nc')
             ds = xr.open_dataset(filepath)
-            _, _ = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)
+            _, _ = pop_tools.to_xgcm_grid_dataset(ds)
 
 
 def test_set_metrics():
@@ -59,3 +59,32 @@ def test_set_metrics():
     actual = get_metrics(ds)
     expected = {('X',): ['DXU'], ('Y',): ['DYT'], ('Z',): ['DZT']}
     assert actual == expected
+
+    assert not get_metrics(xr.Dataset({}))
+
+
+@pytest.mark.parametrize(
+    'ds',
+    [ds_a, ds_b, ds_c],
+)
+def test_metrics_assignment(ds):
+    grid, _ = pop_tools.to_xgcm_grid_dataset(ds)
+    expected = {
+        ('X',): ['DXU', 'DXT'],  # X distances
+        ('Y',): ['DYU', 'DYT'],  # Y distances
+        # ('Z',): ['DZU', 'DZT'],  # Z distances
+        ('X', 'Y'): ['UAREA', 'TAREA'],  # Areas
+    }
+
+    if 'DXU' not in ds:
+        # no metrics variables in ds_a
+        assert not grid._metrics
+    else:
+        actual = {
+            tuple(sorted(key)): [metric.name for metric in metrics]
+            for key, metrics in grid._metrics.items()
+        }
+        if 'S_FLUX_ROFF_VSF' in ds:
+            expected[('X', 'Y')] = ['TAREA']
+            expected[('X',)] = ['DXU']
+        assert actual == expected

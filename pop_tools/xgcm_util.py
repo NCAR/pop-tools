@@ -100,7 +100,7 @@ def relabel_pop_dims(ds):
         if coord in ds_new.coords:
             ds_new = ds_new.drop_vars(coord)
     if 'z_w_top' in ds_new.dims and 'z_w' in ds_new.dims:
-        ds_new = ds_new.drop('z_w_top').rename({'z_w': 'z_w_top'})
+        ds_new = ds_new.drop_vars('z_w_top').rename({'z_w': 'z_w_top'})
     return ds_new
 
 
@@ -118,7 +118,7 @@ def get_metrics(ds):
         new_names = [name for name in names if name in ds]
         if new_names:
             new_metrics[axis] = new_names
-    return metrics
+    return new_metrics
 
 
 def to_xgcm_grid_dataset(ds, metrics=None, **kwargs):
