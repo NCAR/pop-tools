@@ -63,7 +63,19 @@ def test_set_metrics():
     assert not get_metrics(xr.Dataset({}))
 
 
-@pytest.mark.parametrize('ds', [ds_a, ds_b, ds_c])
+def test_metrics_assignment_no_metrics():
+    grid, _ = pop_tools.to_xgcm_grid_dataset(ds_c)
+    assert not grid._metrics
+
+
+def get_metrics(grid):
+    return {
+        tuple(sorted(key)): [metric.name for metric in metrics]
+        for key, metrics in grid._metrics.items()
+    }
+
+
+@pytest.mark.parametrize('ds', [ds_a, ds_b])
 def test_metrics_assignment(ds):
     grid, _ = pop_tools.to_xgcm_grid_dataset(ds)
     expected = {
@@ -72,15 +84,17 @@ def test_metrics_assignment(ds):
         ('X', 'Y'): ['UAREA', 'TAREA'],  # Areas
     }
 
-    if 'DXU' not in ds:
-        # no metrics variables in ds_a
-        expected = {}
-    elif 'S_FLUX_ROFF_VSF' in ds:
+    if 'S_FLUX_ROFF_VSF' in ds:
         expected[('X', 'Y')] = ['TAREA']
         expected[('X',)] = ['DXU']
 
-    actual = {
-        tuple(sorted(key)): [metric.name for metric in metrics]
-        for key, metrics in grid._metrics.items()
-    }
+    actual = get_metrics(grid)
+    assert actual == expected
+
+    grid, _ = pop_tools.to_xgcm_grid_dataset(ds, metrics=None)
+    assert not grid._metrics
+
+    expected = {('X',): ['DXU']}
+    grid, _ = pop_tools.to_xgcm_grid_dataset(ds, metrics={'X': ['DXU']})
+    actual = get_metrics(grid)
     assert actual == expected

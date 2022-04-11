@@ -121,17 +121,18 @@ def get_metrics(ds):
     return new_metrics
 
 
-def to_xgcm_grid_dataset(ds, metrics=None, **kwargs):
+def to_xgcm_grid_dataset(ds, metrics='detect', **kwargs):
     """Modify POP model output to be compatible with xgcm.
 
     Parameters
     ----------
     ds : xarray.Dataset
         An xarray Dataset
-    metrics : dict, optional
+    metrics : {"detect"} or dict, optional
         Dictionary providing metrics to the `xgcm.Grid` contructor.
-        If None, will autodetect metrics that are present by searching for
+        If ``"detect"``, will autodetect metrics that are present by searching for
         variables named DXU, DXT, DYU, DYT, DZU, DZT, UAREA, TAREA.
+        If None, no metrics will be assigned.
     kwargs:
        Additional keyword arguments are passed through to `xgcm.Grid` class.
 
@@ -225,7 +226,7 @@ def to_xgcm_grid_dataset(ds, metrics=None, **kwargs):
             """to_xgcm_grid_dataset() function requires the `xgcm` package. \nYou can install it via PyPI or Conda"""
         )
     ds_new = relabel_pop_dims(ds)
-    if metrics is None:
+    if metrics == 'detect':
         metrics = get_metrics(ds_new)
     grid = xgcm.Grid(ds_new, metrics=metrics, **kwargs)
     return grid, ds_new
