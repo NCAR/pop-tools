@@ -81,11 +81,7 @@ def eos(salt, temp, return_coefs=False, **kwargs):
 
     # compute pressure
     if pressure is None:
-        if use_xarray:
-            pressure = xr.full_like(depth, fill_value=np.nan)
-            pressure[:] = 10.0 * compute_pressure(depth.data)  # dbar
-        else:
-            pressure = 10.0 * compute_pressure(depth)  # dbar
+	pressure = 10.0 * compute_pressure(depth)  # dbar
 
     # enforce min/max values
     tmin = -2.0
@@ -97,9 +93,7 @@ def eos(salt, temp, return_coefs=False, **kwargs):
         temp = temp.clip(tmin, tmax)
         salt = salt.clip(smin, smax)
 
-        salt, temp, pressure = xr.broadcast(salt, temp, pressure)
-        if isinstance(salt.data, dask.array.Array):
-            pressure = pressure.chunk(salt.chunks)
+	salt, temp = xr.broadcast(salt, temp)
 
         if return_coefs:
             RHO, dRHOdS, dRHOdT = _compute_eos_coeffs(salt, temp, pressure)
