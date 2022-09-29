@@ -81,7 +81,7 @@ def eos(salt, temp, return_coefs=False, **kwargs):
 
     # compute pressure
     if pressure is None:
-	pressure = 10.0 * compute_pressure(depth)  # dbar
+        pressure = 10.0 * compute_pressure(depth)  # dbar
 
     # enforce min/max values
     tmin = -2.0
@@ -92,8 +92,7 @@ def eos(salt, temp, return_coefs=False, **kwargs):
     if use_xarray:
         temp = temp.clip(tmin, tmax)
         salt = salt.clip(smin, smax)
-
-	salt, temp = xr.broadcast(salt, temp)
+        salt, temp = xr.broadcast(salt, temp)
 
         if return_coefs:
             RHO, dRHOdS, dRHOdT = _compute_eos_coeffs(salt, temp, pressure)
