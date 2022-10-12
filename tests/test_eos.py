@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pytest
 import xarray as xr
 
 import pop_tools
@@ -33,6 +34,16 @@ def test_eos_xarray_2():
     fname = DATASETS.fetch('cesm_pop_monthly.T62_g17.nc')
     ds = xr.open_dataset(fname, decode_times=False, decode_coords=False)
     rho, drhodS, drhodT = pop_tools.eos(ds.SALT, ds.TEMP, depth=ds.z_t * 1e-2, return_coefs=True)
+    assert isinstance(rho, xr.DataArray)
+    assert isinstance(drhodS, xr.DataArray)
+    assert isinstance(drhodT, xr.DataArray)
+
+
+@pytest.mark.parametrize('depth', (xr.DataArray([2000]), 2000.0))
+def test_eos_xarray_3(depth):
+    fname = DATASETS.fetch('cesm_pop_monthly.T62_g17.nc')
+    ds = xr.open_dataset(fname, decode_times=False, decode_coords=False)
+    rho, drhodS, drhodT = pop_tools.eos(ds.SALT, ds.TEMP, depth=depth, return_coefs=True)
     assert isinstance(rho, xr.DataArray)
     assert isinstance(drhodS, xr.DataArray)
     assert isinstance(drhodT, xr.DataArray)

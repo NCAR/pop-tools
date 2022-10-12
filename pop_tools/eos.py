@@ -75,8 +75,6 @@ def eos(salt, temp, return_coefs=False, **kwargs):
 
     use_xarray = False
     if any(isinstance(arg, xr.DataArray) for arg in [salt, temp, d_or_p]):
-        if not all(isinstance(arg, xr.DataArray) for arg in [salt, temp, d_or_p]):
-            raise ValueError('cannot operate on mixed types')
         use_xarray = True
 
     # compute pressure
