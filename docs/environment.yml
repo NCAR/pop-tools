@@ -13,10 +13,10 @@ dependencies:
   - numba
   - pip
   - pooch
-  - python=3.8
+  - python=3.9
   - sphinx-book-theme >= 0.0.38
   - sphinx-copybutton
-  - sqlalchemy<1.4
+  - sqlalchemy
   - tqdm
   - watermark
   - xarray
@@ -25,5 +25,4 @@ dependencies:
   - pip:
       - sphinxext-opengraph
       - sphinx-comments
-      - -r ../requirements.txt
       - -e ..

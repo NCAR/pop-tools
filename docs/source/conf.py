@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import datetime
 import inspect
@@ -62,6 +61,7 @@ execution_timeout = 600
 execution_excludepatterns = [
     'examples/pop_div_curl_xr_xgcm_metrics_compare*',
     'examples/CloseHeatBudget_POP2*',
+    'examples/cesm-cmip-cf-xarray*',
 ]
 
 comments_config = {
@@ -109,9 +109,9 @@ master_doc = 'index'
 
 # General information about the project.
 current_year = datetime.datetime.now().year
-project = u'pop-tools'
-copyright = u'2018-{}, University Corporation for Atmospheric Research'.format(current_year)
-author = u'pop-tools developers'
+project = 'pop-tools'
+copyright = f'2018-{current_year}, University Corporation for Atmospheric Research'
+author = 'pop-tools developers'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -221,14 +221,14 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
-latex_documents = [(master_doc, 'pop-tools.tex', u'POP-tools Documentation', author, 'manual')]
+latex_documents = [(master_doc, 'pop-tools.tex', 'POP-tools Documentation', author, 'manual')]
 
 
 # -- Options for manual page output ------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'pop-tools', u'POP-tools Documentation', [author], 1)]
+man_pages = [(master_doc, 'pop-tools', 'POP-tools Documentation', [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------
@@ -240,7 +240,7 @@ texinfo_documents = [
     (
         master_doc,
         'POP-tools',
-        u'POP-tools Documentation',
+        'POP-tools Documentation',
         author,
         'POP-tools',
         'One line description of project.',

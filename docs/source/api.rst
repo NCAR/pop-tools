@@ -14,12 +14,22 @@ Grid
    calc_dzu_dzt
    get_grid
 
+
 Equation of State
 ~~~~~~~~~~~~~~~~~
 
 .. autosummary::
    eos
    compute_pressure
+
+
+Calculations
+~~~~~~~~~~~~
+
+.. autosummary::
+   cfc11sol
+   cfc12sol
+
 
 Region masks
 ~~~~~~~~~~~~
@@ -43,6 +53,7 @@ xgcm utilities
 .. autosummary::
    to_xgcm_grid_dataset
 
+
 .. currentmodule:: pop_tools
 
 .. autofunction:: calc_dzu_dzt
@@ -60,3 +71,7 @@ xgcm utilities
 .. autofunction:: lateral_fill
 
 .. autofunction:: to_xgcm_grid_dataset
+
+.. autofunction:: cfc11sol
+
+.. autofunction:: cfc12sol

@@ -94,27 +94,46 @@ def relabel_pop_dims(ds):
             da = ds_new[vname]
             dims_orig = da.dims
             new_spatial_dims = _dims_from_grid_loc(da.attrs['grid_loc'])
-            if dims_orig[0] == 'time':
-                dims = ('time',) + new_spatial_dims
-            else:
-                dims = new_spatial_dims
+            dims = dims_orig[: -len(new_spatial_dims)] + new_spatial_dims
             ds_new[vname] = xr.Variable(dims, da.data, da.attrs, da.encoding, fastpath=True)
     old_coords = ['nlat', 'nlon']
     for coord in old_coords:
         if coord in ds_new.coords:
             ds_new = ds_new.drop_vars(coord)
     if 'z_w_top' in ds_new.dims and 'z_w' in ds_new.dims:
-        ds_new = ds_new.drop('z_w_top').rename({'z_w': 'z_w_top'})
+        ds_new = ds_new.drop_vars('z_w_top').rename({'z_w': 'z_w_top'})
     return ds_new
 
 
-def to_xgcm_grid_dataset(ds, **kwargs):
+def get_metrics(ds):
+    """Finds metrics variables present in `ds`, returns a dict that can be passed to xgcm."""
+    metrics = {
+        ('X',): ['DXU', 'DXT'],  # X distances
+        ('Y',): ['DYU', 'DYT'],  # Y distances
+        ('Z',): ['DZU', 'DZT'],  # Z distances
+        ('X', 'Y'): ['UAREA', 'TAREA'],  # Areas
+    }
+    # filter to variables that are present
+    new_metrics = {}
+    for axis, names in metrics.items():
+        new_names = [name for name in names if name in ds]
+        if new_names:
+            new_metrics[axis] = new_names
+    return new_metrics
+
+
+def to_xgcm_grid_dataset(ds, metrics='detect', **kwargs):
     """Modify POP model output to be compatible with xgcm.
 
     Parameters
     ----------
     ds : xarray.Dataset
         An xarray Dataset
+    metrics : {"detect"} or dict, optional
+        Dictionary providing metrics to the `xgcm.Grid` contructor.
+        If ``"detect"``, will autodetect metrics that are present by searching for
+        variables named DXU, DXT, DYU, DYT, DZU, DZT, UAREA, TAREA.
+        If None, no metrics will be assigned.
     kwargs:
        Additional keyword arguments are passed through to `xgcm.Grid` class.
 
@@ -208,5 +227,7 @@ def to_xgcm_grid_dataset(ds, **kwargs):
             """to_xgcm_grid_dataset() function requires the `xgcm` package. \nYou can install it via PyPI or Conda"""
         )
     ds_new = relabel_pop_dims(ds)
-    grid = xgcm.Grid(ds_new, **kwargs)
+    if metrics == 'detect':
+        metrics = get_metrics(ds_new)
+    grid = xgcm.Grid(ds_new, metrics=metrics, **kwargs)
     return grid, ds_new
