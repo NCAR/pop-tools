@@ -139,14 +139,14 @@ def get_grid(grid_name, scrip=False):
     grid_file_data = np.fromfile(horiz_grid_fname, dtype='>f8', count=-1)
     grid_file_data = grid_file_data.reshape((7, nlat, nlon))
 
-    ULAT = grid_file_data[0, :, :].astype(np.float)
-    ULONG = grid_file_data[1, :, :].astype(np.float)
-    HTN = grid_file_data[2, :, :].astype(np.float)
-    HTE = grid_file_data[3, :, :].astype(np.float)
+    ULAT = grid_file_data[0, :, :].astype(float)
+    ULONG = grid_file_data[1, :, :].astype(float)
+    HTN = grid_file_data[2, :, :].astype(float)
+    HTE = grid_file_data[3, :, :].astype(float)
 
     # compute TLAT, TLONG
-    TLAT = np.empty((nlat, nlon), dtype=np.float)
-    TLONG = np.empty((nlat, nlon), dtype=np.float)
+    TLAT = np.empty((nlat, nlon), dtype=float)
+    TLONG = np.empty((nlat, nlon), dtype=float)
     _compute_TLAT_TLONG(ULAT, ULONG, TLAT, TLONG, nlat, nlon)
 
     # generate DXT, DYT
@@ -439,8 +439,8 @@ def _compute_corners(ULAT, ULONG):
     """Compute grid corners."""
 
     nlat, nlon = ULAT.shape
-    corner_lat = np.empty((nlat, nlon, 4), dtype=np.float)
-    corner_lon = np.empty((nlat, nlon, 4), dtype=np.float)
+    corner_lat = np.empty((nlat, nlon, 4), dtype=float)
+    corner_lon = np.empty((nlat, nlon, 4), dtype=float)
 
     # NE corner
     corner_lat[:, :, 0] = ULAT
