@@ -49,7 +49,6 @@ with open(grid_def_file) as f:
 
 
 def fetch(self, fname, processor=None, downloader=None):
-
     """
     This is a modified version of Pooch.fetch() method. This modification is necessary
     due to the fact that on Cheyenne/Casper path to the local data storage folder points

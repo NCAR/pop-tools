@@ -8,7 +8,6 @@ from pop_tools import DATASETS
 
 
 def test_lateral_fill_np_array():
-
     valid_points, z = _generate_2D_test_dataset()
 
     # compute lateral fill
@@ -24,7 +23,6 @@ def test_lateral_fill_np_array():
 
 
 def test_lateral_fill_np_array_ltripole():
-
     valid_points, z = _generate_2D_test_dataset(tripole=True)
 
     # compute lateral fill
@@ -40,7 +38,6 @@ def test_lateral_fill_np_array_ltripole():
 
 
 def test_lateral_fill_np_array_SOR():
-
     valid_points, z = _generate_2D_test_dataset()
 
     # compute lateral fill
@@ -56,7 +53,6 @@ def test_lateral_fill_np_array_SOR():
 
 
 def test_lateral_fill_np_array_ltripole_SOR():
-
     valid_points, z = _generate_2D_test_dataset(tripole=True)
 
     # compute lateral fill

@@ -77,16 +77,13 @@ def region_mask_3d(grid_name, mask_name=None, region_defs=None):
 
     # loop over region names
     for i, (region_name, crit_list) in enumerate(region_defs.items()):
-
         # loop over list of criteria groups
         mask = np.zeros((nlat, nlon), dtype=bool)
         for crit in crit_list:
-
             mask_and = np.ones((nlat, nlon), dtype=bool)
 
             # loop over each criterion
             for crit_type, crit_dict in crit.items():
-
                 # apply bounds or match
                 if crit_type == 'bounds':
                     for field, bounds in crit_dict.items():
