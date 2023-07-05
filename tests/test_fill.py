@@ -181,7 +181,7 @@ def _generate_2D_test_dataset(tripole=False):
     z_orig = np.sin(x) ** 10 + np.cos(10 + y * x) * np.cos(x)
 
     # construct mask and apply mask
-    valid_points = np.ones(z_orig.shape, dtype=np.bool)
+    valid_points = np.ones(z_orig.shape, dtype=bool)
     valid_points = np.where(y < 0.5 * np.sin(5 * x) + 1.5, False, valid_points)
     z_orig = np.where(~valid_points, np.nan, z_orig)
 
