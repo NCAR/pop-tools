@@ -22,7 +22,7 @@ conda install -c conda-forge pop-tools
 
 See [documentation](https://pop-tools.readthedocs.io) for more information.
 
-[github-ci-badge]: https://img.shields.io/github/workflow/status/NCAR/pop-tools/CI?label=CI&logo=github&style=for-the-badge
+[github-ci-badge]: https://img.shields.io/github/actions/workflow/status/NCAR/pop-tools/ci.yaml?label=CI&logo=github&style=for-the-badge
 [github-ci-link]: https://github.com/NCAR/pop-tools/actions?query=workflow%3ACI
 [codecov-badge]: https://img.shields.io/codecov/c/github/NCAR/pop-tools.svg?logo=codecov&style=for-the-badge
 [codecov-link]: https://codecov.io/gh/NCAR/pop-tools
