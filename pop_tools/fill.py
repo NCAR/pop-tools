@@ -84,7 +84,6 @@ def lateral_fill(
 def lateral_fill_np_array(
     var, isvalid_mask, ltripole=False, tol=1.0e-4, use_sor=False, rc=1.8, max_iter=10000
 ):
-
     """Perform lateral fill on numpy.array
 
     Parameters [NB defaults set redundantly with lateral_fill above to allow this
