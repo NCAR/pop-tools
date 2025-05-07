@@ -27,7 +27,7 @@ jobs:
         python-version: ['3.8', '3.11']
     steps:
       - uses: actions/checkout@v3
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@11ae174708d1ae769b9457e7d6ed64d606c99af1 #v2
         with:
           channels: conda-forge,nodefaults
           channel-priority: strict
@@ -47,7 +47,7 @@ jobs:
           python -m pytest
 
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v3.1.4
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d #v3.1.4
         with:
           file: ./coverage.xml
           flags: unittests
