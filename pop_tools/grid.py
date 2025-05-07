@@ -189,7 +189,7 @@ def get_grid(grid_name, scrip=False):
     kmt_flat = np.fromfile(topography_fname, dtype='>i4', count=-1)
     assert kmt_flat.shape[0] == (
         nlat * nlon
-    ), f'unexpected dims in topography file: {grid_attrs["topography_fname"]}'
+    ), f'unexpected dims in topography file: {grid_attrs['topography_fname']}'
     assert kmt_flat.max() <= len(z_t), 'Max KMT > length z_t'
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
@@ -198,7 +198,7 @@ def get_grid(grid_name, scrip=False):
     region_mask_flat = np.fromfile(region_mask_fname, dtype='>i4', count=-1)
     assert region_mask_flat.shape[0] == (
         nlat * nlon
-    ), f'unexpected dims in region_mask file: {grid_attrs["region_mask_fname"]}'
+    ), f'unexpected dims in region_mask file: {grid_attrs['region_mask_fname']}'
     REGION_MASK = region_mask_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # output dataset
