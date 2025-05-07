@@ -198,7 +198,7 @@ def get_grid(grid_name, scrip=False):
     region_mask_flat = np.fromfile(region_mask_fname, dtype='>i4', count=-1)
     assert region_mask_flat.shape[0] == (
         nlat * nlon
-    ), f'unexpected dims in region_mask file: {grid_attrs["region_mask_fname"]}'
+    ), f'unexpected dims in region_mask file: {grid_attrs['region_mask_fname']}'
     REGION_MASK = region_mask_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
     # output dataset
