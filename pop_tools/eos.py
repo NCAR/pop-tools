@@ -19,9 +19,7 @@ def compute_pressure(depth):
     pressure : float
       Pressure in dbar
     """
-    return (
-        0.059808 * (np.exp(-0.025 * depth) - 1.0) + 0.100766 * depth + 2.28405e-7 * (depth**2.0)
-    )
+    return 0.059808 * (np.exp(-0.025 * depth) - 1.0) + 0.100766 * depth + 2.28405e-7 * (depth**2.0)
 
 
 def eos(salt, temp, return_coefs=False, **kwargs):
