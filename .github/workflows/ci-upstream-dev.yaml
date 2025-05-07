@@ -10,7 +10,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@11ae174708d1ae769b9457e7d6ed64d606c99af1 #v2
         with:
           channels: conda-forge,nodefaults
