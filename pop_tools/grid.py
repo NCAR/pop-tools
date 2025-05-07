@@ -189,7 +189,7 @@ def get_grid(grid_name, scrip=False):
     kmt_flat = np.fromfile(topography_fname, dtype='>i4', count=-1)
     assert kmt_flat.shape[0] == (
         nlat * nlon
-    ), f'unexpected dims in topography file: {grid_attrs["topography_fname"]}'
+    ), f'unexpected dims in topography file: {grid_attrs['topography_fname']}'
     assert kmt_flat.max() <= len(z_t), 'Max KMT > length z_t'
     KMT = kmt_flat.reshape(grid_attrs['lateral_dims']).astype(np.int32)
 
