@@ -11,6 +11,7 @@ Grid
 ~~~~
 
 .. autosummary::
+   calc_dzu_dzt
    get_grid
 
 
@@ -42,6 +43,7 @@ Utilities
 ~~~~~~~~~
 
 .. autosummary::
+   four_point_min
    lateral_fill
 
 
@@ -53,6 +55,8 @@ xgcm utilities
 
 
 .. currentmodule:: pop_tools
+
+.. autofunction:: calc_dzu_dzt
 
 .. autofunction:: get_grid
 
