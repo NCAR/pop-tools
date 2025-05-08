@@ -18,7 +18,7 @@ jobs:
           mamba-version: '*'
           activate-environment: pop-tools-dev
           auto-update-conda: false
-          python-version: 3.8
+          python-version: 3.12
           environment-file: ci/environment-upstream-dev.yml
       - name: Install pop-tools
         run: |
