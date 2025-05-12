@@ -11,7 +11,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v3
-      - uses: conda-incubator/setup-miniconda@11ae174708d1ae769b9457e7d6ed64d606c99af1 #v2
+      - uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830 #v2
         with:
           channels: conda-forge,nodefaults
           channel-priority: strict
