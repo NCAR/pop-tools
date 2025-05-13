@@ -2,12 +2,12 @@ name: CI
 on:
   push:
     branches:
-      - '*'
+      - "*"
   pull_request:
     branches:
-      - '*'
+      - "*"
   schedule:
-    - cron: '0 0 * * *' # Daily “At 00:00”
+    - cron: "0 0 * * *" # Daily “At 00:00”
   workflow_dispatch: # allows you to trigger manually
 
 concurrency:
@@ -24,14 +24,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.12']
+        python-version: ["3.9", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830 #v3.1.1
         with:
           channels: conda-forge,nodefaults
           channel-priority: strict
-          mamba-version: '*'
+          mamba-version: "*"
           activate-environment: pop-tools-dev
           auto-update-conda: false
           python-version: ${{ matrix.python-version }}
