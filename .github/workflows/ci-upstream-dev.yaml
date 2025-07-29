@@ -1,7 +1,7 @@
 name: Upstream-dev CI
 on:
   schedule:
-    - cron: '0 0 * * *' # Daily “At 00:00”
+    - cron: "0 0 * * *" # Daily “At 00:00”
 jobs:
   upstream-dev:
     name: upstream-dev
@@ -15,7 +15,7 @@ jobs:
         with:
           channels: conda-forge,nodefaults
           channel-priority: strict
-          mamba-version: '*'
+          mamba-version: "*"
           activate-environment: pop-tools-dev
           auto-update-conda: false
           python-version: 3.12

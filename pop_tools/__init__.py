@@ -1,6 +1,5 @@
 """Top-level module for pop_tools"""
 
-
 from pkg_resources import DistributionNotFound, get_distribution
 
 from .calc import cfc11sol, cfc12sol
