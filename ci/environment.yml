@@ -18,3 +18,4 @@ dependencies:
   - xarray>=0.16.1
   - xgcm
   - watermark
+  - zarr
