@@ -5,7 +5,7 @@ Functions to load sample data
 import os
 from pathlib import Path
 
-import pkg_resources
+import importlib.resources
 import pooch
 
 DATASETS = pooch.create(
@@ -14,7 +14,7 @@ DATASETS = pooch.create(
     base_url='https://ftp.cgd.ucar.edu/archive/aletheia-data/cesm-data/ocn/',
     env='POP_TOOLS_DATA_DIR',
 )
-DATASETS.load_registry(pkg_resources.resource_stream('pop_tools', 'data_registry.txt'))
+DATASETS.load_registry(importlib.resources.files('pop_tools').joinpath('data_registry.txt'))
 
 
 class UnzipZarr(pooch.processors.Unzip):

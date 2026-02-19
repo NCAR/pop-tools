@@ -5,7 +5,7 @@ import yaml
 
 from .grid import get_grid, grid_defs
 
-region_def_file = importlib.resources.files('pop_tools', 'region_mask_definitions.yaml')
+region_def_file = importlib.resources.files('pop_tools').joinpath('region_mask_definitions.yaml')
 # open defined region masks
 with open(region_def_file) as f:
     all_region_defs = yaml.safe_load(f)

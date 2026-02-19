@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
+import importlib.resources
 import numpy as np
-import pkg_resources
 import pooch
 import xarray as xr
 import yaml
@@ -33,7 +33,7 @@ INPUTDATA = pooch.create(
 )
 
 
-INPUTDATA.load_registry(pkg_resources.resource_stream('pop_tools', 'inputdata_registry.txt'))
+INPUTDATA.load_registry(importlib.resources.files('pop_tools').joinpath('inputdata_registry.txt'))
 
 if tqdm is not None:
     downloader = pooch.HTTPDownloader(progressbar=True, verify=False, allow_redirects=True)
@@ -41,8 +41,8 @@ else:
     downloader = pooch.HTTPDownloader(verify=False, allow_redirects=True)
 
 
-grid_def_file = pkg_resources.resource_filename('pop_tools', 'pop_grid_definitions.yaml')
-input_templates_dir = pkg_resources.resource_filename('pop_tools', 'input_templates')
+grid_def_file = importlib.resources.files('pop_tools').joinpath('pop_grid_definitions.yaml')
+input_templates_dir = importlib.resources.files('pop_tools').joinpath('input_templates')
 
 with open(grid_def_file) as f:
     grid_defs = yaml.safe_load(f)
