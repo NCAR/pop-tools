@@ -1,7 +1,7 @@
+import importlib.resources
 import os
 from pathlib import Path
 
-import importlib.resources
 import numpy as np
 import pooch
 import xarray as xr

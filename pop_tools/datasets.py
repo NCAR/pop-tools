@@ -2,10 +2,10 @@
 Functions to load sample data
 """
 
+import importlib.resources
 import os
 from pathlib import Path
 
-import importlib.resources
 import pooch
 
 DATASETS = pooch.create(

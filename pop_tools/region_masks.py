@@ -1,5 +1,6 @@
-import numpy as np
 import importlib.resources
+
+import numpy as np
 import xarray as xr
 import yaml
 
