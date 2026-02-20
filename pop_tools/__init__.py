@@ -1,6 +1,6 @@
 """Top-level module for pop_tools"""
 
-from pkg_resources import DistributionNotFound, get_distribution
+from importlib.metadata import version as _version
 
 from .calc import cfc11sol, cfc12sol
 from .datasets import DATASETS
@@ -11,7 +11,8 @@ from .region_masks import list_region_masks, region_mask_3d
 from .xgcm_util import to_xgcm_grid_dataset
 
 try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:
-    # package is not installed
-    pass
+    __version__ = _version("pop_tools")
+except Exception:
+    # Local copy or not installed with setuptools.
+    # Disable minimum version checks on downstream libraries.
+    __version__ = "9999"

@@ -1,11 +1,12 @@
+import importlib.resources
+
 import numpy as np
-import pkg_resources
 import xarray as xr
 import yaml
 
 from .grid import get_grid, grid_defs
 
-region_def_file = pkg_resources.resource_filename('pop_tools', 'region_mask_definitions.yaml')
+region_def_file = importlib.resources.files('pop_tools').joinpath('region_mask_definitions.yaml')
 # open defined region masks
 with open(region_def_file) as f:
     all_region_defs = yaml.safe_load(f)
