@@ -242,6 +242,7 @@ def get_grid(grid_name, scrip=False):
 
     else:
         TLONG = np.where(TLONG < 0.0, TLONG + 2 * np.pi, TLONG)
+        ULONG = np.where(ULONG < 0.0, ULONG + 2 * np.pi, ULONG)
 
         dso['TLAT'] = xr.DataArray(
             np.rad2deg(TLAT),
