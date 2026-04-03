@@ -2,8 +2,11 @@ import os
 
 import pytest
 import xarray as xr
+from xarray.testing import assert_equal
 
 import pop_tools
+from pop_tools import DATASETS
+from pop_tools.datasets import UnzipZarr
 
 from .util import ds_compare, is_ncar_host
 
@@ -43,3 +46,42 @@ def test_get_grid_to_netcdf():
             gridfile = f'{grid}_{format}.nc'
             ds.to_netcdf(gridfile, format=format)
             os.system(f'rm -f {gridfile}')
+
+
+def test_four_point_min_kmu():
+    zstore = DATASETS.fetch('comp-grid.tx9.1v3.20170718.zarr.zip', processor=UnzipZarr())
+    ds = xr.open_zarr(zstore)
+
+    # topmost row is wrong because we need to account for tripole seam
+    # rightmost nlon is wrong because it doesn't matter
+    expected = ds.KMU.isel(nlat=slice(-1), nlon=slice(-1))
+    actual = pop_tools.grid.four_point_min(ds.KMT).isel(nlat=slice(-1), nlon=slice(-1))
+    assert_equal(expected, actual)
+
+    # make sure dask & numpy results check out
+    actual = pop_tools.grid.four_point_min(ds.KMT.compute()).isel(nlat=slice(-1), nlon=slice(-1))
+    assert_equal(expected, actual)
+
+
+def test_dzu_dzt():
+
+    zstore = DATASETS.fetch('comp-grid.tx9.1v3.20170718.zarr.zip', processor=UnzipZarr())
+    # chunk size is 300 along nlat; make sure we cross at least
+    # one chunk boundary to test map_overlap
+    ds = xr.open_zarr(zstore).sel(nlat=slice(100, 350))
+
+    dzu, dzt = pop_tools.grid.calc_dzu_dzt(ds)
+    # northernmost row will be wrong since we are working on a subset
+    assert_equal(dzu.isel(nlat=slice(-1)), ds['DZU'].isel(nlat=slice(-1)))
+    assert_equal(dzt, ds['DZT'])
+
+    _, xds = pop_tools.to_xgcm_grid_dataset(ds)
+    with pytest.raises(ValueError):
+        pop_tools.grid.calc_dzu_dzt(xds)
+
+    expected_vars = ['dz', 'KMT', 'DZBC']
+    for var in expected_vars:
+        dsc = ds.copy()
+        del dsc[var]
+        with pytest.raises(ValueError):
+            pop_tools.grid.calc_dzu_dzt(dsc)
