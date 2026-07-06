@@ -123,10 +123,8 @@ def get_grid(grid_name, scrip=False):
     """
 
     if grid_name not in grid_defs:
-        raise ValueError(
-            f"""Unknown grid: {grid_name}
-             Please select from the following: {list(grid_defs.keys())}"""
-        )
+        raise ValueError(f"""Unknown grid: {grid_name}
+             Please select from the following: {list(grid_defs.keys())}""")
 
     grid_attrs = grid_defs[grid_name]
 
