@@ -148,11 +148,9 @@ def _get_region_definitions(ds, grid_name, mask_name):
         return {k: [{'match': {'REGION_MASK': [v]}}] for k, v in zip(region_names, region_index)}
     else:
         if mask_name not in all_region_defs[grid_name]:
-            raise ValueError(
-                f'''unknown region mask: {mask_name}
+            raise ValueError(f'''unknown region mask: {mask_name}
                              the following regions masks are defined: {list_region_masks(grid_name)}
-                             '''
-            )
+                             ''')
 
         return all_region_defs[grid_name][mask_name]
 
